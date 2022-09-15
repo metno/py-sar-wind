@@ -1,0 +1,49 @@
+@startuml container-diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+'LAYOUT_LEFT_RIGHT()
+
+System_Ext(nbs, "NBS", "Norwegian ground segment for Sentinel data.")
+System_Ext(cmems, "CMEMS", "Copernicus ftp server for Sentinel data.")
+System_Ext(met, "Metadata services", "METs data catalog (data.met.no).")
+SystemDb_Ext(met_storage, "Data storage", "Lustre file system.")
+
+'System(sar_proc, "met-sar-vind", "METs SAR wind processing system.")
+
+Container(broker, "Broker", "cron/bash/python", "Broker system to listen for messages about new SAR datasets and start processing chain. Probably only requires the MMD data access field.")
+
+Container(findsar, "Find SAR", "Python", "Tool for searching NBS and CMEMS catalogs for new SAR data in selected regions at defined intervals (cron; e.g., every 15th minute). The results are checked against a local file with filenames of already found datasets. Optionally, we could include a historic date (i.e., the time of the previous search) to be compared to the dataset creation date in the NBS and CMEMS search queries if this is available. New SAR datasets are described in a minimal MMD file (does not need to validate but data access information is required). TODO: find code to create MMD from SAFE.")
+
+ContainerDb(processed_sar, "Processed SAR files", "File", "List of processed SAR files used to check for new data.")
+
+Container(findmodel, "Find model wind", "Python", "Tool for searching data.met.no for model wind data.")
+Container(sarwind, "SAR wind", "Python", "Tool for processing wind field from SAR data and store the resulting NetCDF-CF file in provided path.")
+Container(nc2mmd, "MMD process and ingest", "py-mmd-tools", "Tool to export global attributes in NetCDF-CF file to MMD and ingest in event queue and catalog.")
+
+Rel(broker, met, "listens for new SAR data in", "NATS")
+
+Rel(broker, findmodel, "starts model wind search in")
+Rel(broker, sarwind, "starts SAR wind processing in")
+Rel(broker, nc2mmd, "sends filename to")
+
+Rel(sarwind, broker, "returns filename to")
+Rel(sarwind, nbs, "uses geolocation tool for SAFE files in")
+
+Rel(sarwind, met_storage, "stores result file (NetCDF-CF) in")
+
+Rel(nc2mmd, met_storage, "reads NetCDF-CF file from")
+Rel(nc2mmd, met, "pushes MMD file to event queue in")
+
+Rel(findsar, nbs, "finds and streams SAR dataset in", "opensearch")
+Rel(findsar, cmems, "(optionally) finds and downloads SAR dataset in", "ftp")
+Rel(findsar, met, "sends message with SAR MMD payload to", "CloudEvent")
+
+Rel(findsar, processed_sar, "compares NBS and CMEMS catalog results with")
+
+Rel(findmodel, met, "finds and streams model wind dataset in")
+
+
+SHOW_LEGEND()
+
+@enduml

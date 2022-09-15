@@ -1,2 +1,21 @@
 # met-sar-vind
-System for prosessering av SAR vind
+
+System for SAR wind processing.
+
+# C4 diagrams
+
+![Context diagram](context-diagram.png)
+
+![Container diagram](container-diagram.png)
+
+![sarwind-component-diagram](sarwind-component-diagram.png)
+
+# Requirements
+
+## User stories
+
+See explanation in https://it.pages.met.no/kurs/it-architecture-intro/#8 and onwards in the presentation made by Arnulf.
+
+## Non-functional requirements
+
+See explanation in https://it.pages.met.no/kurs/it-architecture-intro/#13

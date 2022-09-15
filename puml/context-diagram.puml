@@ -1,0 +1,30 @@
+@startuml context-diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_TOP_DOWN()
+'LAYOUT_LEFT_RIGHT()
+
+Person(dataproducer, "Dataset Producer")
+Person(consumers, "Data Consumer", "A data consumer can be a human (advanced, intermediate or simple users) or a machine (e.g., a mobile app or a data portal). Simple and intermediate users search, inspect, and access data via an external interface (e.g., a mobile app or data portal). Advanced users acess the search, visualization, and distribution services directly. Open licenses and well documented data following international standards enable Interoperability and Reusability.")
+
+System_Ext(nbs, "NBS", "Norwegian ground segment for Sentinel data.")
+System_Ext(esa, "CMEMS", "Copernicus ftp server for Sentinel data.")
+System_Ext(met, "Metadata services", "METs data catalog (data.met.no).")
+SystemDb_Ext(met_storage, "Data storage", "Lustre file system. SAR wind files need to be made accessible from thredds.")
+System(sar_proc, "met-sar-vind", "METs SAR wind processing system.")
+
+Rel(sar_proc, nbs, "finds and streams SAR dataset in")
+Rel(sar_proc, nbs, "uses geolocation tool for SAFE files in")
+Rel(sar_proc, esa, "(optionally) finds and downloads SAR dataset in")
+Rel(sar_proc, met, "finds and streams model wind dataset in")
+
+Rel(sar_proc, met, "pushes MMD files to")
+Rel(sar_proc, met_storage, "stores NetCDF-CF files in")
+
+Rel(dataproducer, sar_proc, "sets up regular SAR wind processing in")
+
+Rel(consumers, met, "finds and accesses SAR wind datasets in")
+
+SHOW_LEGEND()
+
+@enduml
