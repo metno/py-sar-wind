@@ -4,7 +4,7 @@ System for SAR wind processing.
 
 # C4 diagrams
 
-![Context diagram](context-diagram.png)
+![Context diagram](https://github.com/metno/met-sar-vind/blob/main/puml/context-diagram.png)
 
 ![Container diagram](container-diagram.png)
 
