@@ -4,17 +4,17 @@ System for SAR wind processing.
 
 # C4 diagrams
 
+## Landscape diagram
+
+![Landscape diagram](https://github.com/metno/met-sar-vind/blob/main/puml/landscape-diagram.png)
+
 ## Context diagram
 
 ![Context diagram](https://github.com/metno/met-sar-vind/blob/main/puml/context-diagram.png)
 
-## Container diagram
+## SAR wind container diagram
 
-![Container diagram](https://github.com/metno/met-sar-vind/blob/main/puml/container-diagram.png)
-
-## SAR wind component diagram
-
-![sarwind-component-diagram](https://github.com/metno/met-sar-vind/blob/main/puml/sarwind-component-diagram.png)
+![sarwind-container-diagram](https://github.com/metno/met-sar-vind/blob/main/puml/sarwind-container-diagram.png)
 
 # Requirements
 
