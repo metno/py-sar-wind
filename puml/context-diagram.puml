@@ -4,20 +4,27 @@
 LAYOUT_TOP_DOWN()
 'LAYOUT_LEFT_RIGHT()
 
+System_Ext(adc, "adc.met.no", "The Arctic Data Center (ADC) makes data from several data centers, including NERSC, findable via ADC solutions (csw, http, etc.). MMD metadata is stored in a SOLR db within the Metadata Services.") 
+'System_Ext(datamet, "data.met.no", "METs web based data catalog interface (data.met.no). data.met.no makes data from MET findable via ADC solutions (csw, http, etc.). MMD metadata is stored in a SOLR db within the Metadata Services. SAR wind datasets are available for one month after production.") 
+
 System_Ext(nbs, "NBS", "Norwegian ground segment for Sentinel data.")
 System_Ext(cmems, "CMEMS", "Copernicus ftp server for Sentinel data.")
-System_Ext(met, "Metadata services", "METs data catalog (data.met.no).")
-SystemDb_Ext(met_storage, "Data storage", "Lustre file system.")
+System_Ext(met, "Metadata Services", "Defines a REST API to create, update, delete, and validate MMD files. Discovery metadata is then stored in SOLR, and available via different API protocols (e.g., OAI-PMH, OGC CSW, opensearch).")
+SystemDb_Ext(nersc, "Long-term data storage", "Data is downloaded to the Nansen Center data center and made available from thredds.nersc.no, since they have received funding to take care of the long-term management of SAR wind data.")
+SystemDb_Ext(met_storage, "Temporary data storage", "Lustre file system. 1 month temporary storage as backup to NERSC long-term data storage.")
 
-System(broker, "Broker", "cron/bash/python", "Broker system to listen for messages about new SAR datasets and start processing chain. Probably only requires the MMD data access field.")
-
-System(findsar, "Find SAR", "Tool for searching NBS and CMEMS catalogs for new SAR data in selected regions at defined intervals (cron; e.g., every 15th minute). The results are checked against a local file with filenames of already found datasets. Optionally, we could include a historic date (i.e., the time of the previous search) to be compared to the dataset creation date in the NBS and CMEMS search queries if this is available. New SAR datasets are described in a minimal MMD file (does not need to validate but data access information is required). TODO: find code to create MMD from SAFE.")
-
-SystemDb(processed_sar, "Processed SAR files", "File with list of processed SAR files used to check for new data.")
-
-System(findmodel, "Find model wind", "Tool for searching data.met.no for model wind data.")
-System(sarwind, "SAR wind", "Tool for processing wind field from SAR data and store the resulting NetCDF-CF file in provided path.")
-System(nc2mmd, "MMD process and ingest", "Tool to export global attributes in NetCDF-CF file to MMD and ingest in event queue and catalog. Uses py-mmd-tools.")
+Boundary(sarwindboundary, "MET SAR wind systems"){
+  System(cleanup, "Clean rolling archive", "Cleaning system to delete all NetCDF-CF files that are older than 1 month, and update metadata files.")
+  System(broker, "Broker", "Broker system to listen for messages about new SAR datasets and start SAR wind processing chain. Probably only requires the MMD data access field. Implemented in cron/bash/python.")
+  
+  System(findsar, "Find NRT SAR", "Tool for searching NBS and CMEMS catalogs for new SAR data in selected regions at defined intervals (cron; e.g., every 15th minute). The results are checked against a local file with filenames of already found datasets. Optionally, we could include a historic date (i.e., the time of the previous search) to be compared to the dataset creation date in the NBS and CMEMS search queries if this is available. New SAR datasets are described in a minimal MMD file (does not need to validate but data access information is required). TODO: find code to create MMD from SAFE.")
+  
+  SystemDb(processed_sar, "Processed SAR files", "File with list of processed SAR files used to check for new data.")
+  
+  System(findmodel, "Find model wind", "Tool for finding model wind data.")
+  System(sarwind, "SAR wind", "Tool for processing wind field from SAR data and store the resulting NetCDF-CF file in provided path.")
+  System(nc2mmd, "MMD process and ingest", "Tool to export global attributes in NetCDF-CF file to MMD and ingest in event queue and catalog. Uses py-mmd-tools.")
+}
 
 Rel(broker, met, "listens for new SAR data in", "NATS")
 
@@ -26,21 +33,26 @@ Rel(broker, sarwind, "starts SAR wind processing in")
 Rel(broker, nc2mmd, "sends filename to")
 
 Rel(sarwind, broker, "returns filename to")
-Rel(sarwind, nbs, "uses geolocation tool for SAFE files in")
 
 Rel(sarwind, met_storage, "stores result file (NetCDF-CF) in")
 
 Rel(nc2mmd, met_storage, "reads NetCDF-CF file from")
 Rel(nc2mmd, met, "pushes MMD file to event queue in")
 
-Rel(findsar, nbs, "finds and streams SAR dataset in", "opensearch")
-Rel(findsar, cmems, "(optionally) finds and downloads SAR dataset in", "ftp")
+Rel_U(findsar, nbs, "finds and streams SAR dataset in", "opensearch")
+Rel_U(findsar, cmems, "(optionally) finds and downloads SAR dataset in", "ftp")
 Rel(findsar, met, "sends message with SAR MMD payload to", "CloudEvent")
 
 Rel(findsar, processed_sar, "compares NBS and CMEMS catalog results with")
 
 Rel(findmodel, met, "finds and streams model wind dataset in")
 
+Rel_U(cleanup, nersc, "checks dataset existence in")
+Rel(cleanup, met_storage, "deletes dataset file in")
+Rel(cleanup, met, "updates metadata in", "https")
+
+Rel_U(adc, met, "finds data in", "OAI-PMH/OGC-CSW")
+'Rel_U(datamet, met, "finds data in", "OAI-PMH/OGC-CSW")
 
 SHOW_LEGEND()
 
