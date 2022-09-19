@@ -1,12 +1,7 @@
-#!/usr/bin/env python
-# Name:     openwind.py
-# Purpose:      Calculate wind speed from SAR images and wind direction
-# Authors:      Morten Wergeland Hansen, Knut-Frode Dagestad
-# License:      This file is part of OPENWIND. You can redistribute it or
-#               modify under the terms of GNU General Public License, v.3
-#               http://www.gnu.org/licenses/gpl-3.0.html
-
-from __future__ import absolute_import
+""" License: This file is part of https://github.com/metno/met-sar-vind
+             met-sar-vind is licensed under the Apache-2.0 license
+             (https://github.com/metno/met-sar-vind/blob/main/LICENSE).
+"""
 
 import argparse
 import warnings
@@ -15,57 +10,54 @@ from dateutil.parser import parse
 
 import numpy as np
 
-try:
-    import matplotlib.pyplot as plt
-    from matplotlib.cm import jet
-except:
-    print('WARNING: Matplotlib not available, cannot make plots')
-
 from nansat.nansat import Nansat, Domain, _import_mappers
-from openwind.cmod5n import cmod5n_inverse
+
+from sarwind.cmod5n import cmod5n_inverse
 
 class TimeDiffError(Exception):
     pass
 
+def get_nansat(file):
+    return Nansat(file)
+
 class SARWind(Nansat, object):
     """
     A class for calculating wind speed from SAR images using CMOD
+
+    Parameters
+    -----------
+    sar_image : string or Nansat object
+                The SAR image as a filename or Nansat object
+    wind_direction : int, numpy array, string, Nansat
+                Auxiliary wind field information needed to calculate
+                SAR wind (must be or have wind direction in degrees):
+
+                - constant wind direction (integer),
+                - array of wind directions, same size as the SAR data,
+                - the name of a Nansat compatible file containing
+                    wind direction information
+                - name of a mapper with functionality to find a wind
+                    file (online or on local disk) matching the SAR
+                    image time [DEFAULT: 'ncep_wind_online']
+                - a Nansat object with wind direction.
+    pixel_size : float or int
+                Grid pixel size in metres
+    resample_alg : int
+                Resampling algorithm used for reprojecting wind field
+                to SAR image
+                    -1 : Average,
+                     0 : NearestNeighbour
+                     1 : Bilinear (default),
+                     2 : Cubic,
+                     3 : CubicSpline,
+                     4 : Lancoz
+    force : bool
+                Force wind calculation if True
+
     """
 
     def __init__(self, sar_image, wind_direction='ncep_wind_online',
                     band_name=None, pixelsize=500, resample_alg=1, force=False, *args, **kwargs):
-        """
-            Parameters
-            -----------
-            sar_image : string or Nansat object
-                        The SAR image as a filename or Nansat object
-            wind_direction : int, numpy array, string, Nansat
-                        Auxiliary wind field information needed to calculate
-                        SAR wind (must be or have wind direction in degrees):
-
-                        - constant wind direction (integer),
-                        - array of wind directions, same size as the SAR data,
-                        - the name of a Nansat compatible file containing
-                          wind direction information
-                        - name of a mapper with functionality to find a wind
-                          file (online or on local disk) matching the SAR
-                          image time [DEFAULT: 'ncep_wind_online']
-                        - a Nansat object with wind direction.
-            pixel_size : float or int
-                        Grid pixel size in metres
-            resample_alg : int
-                        Resampling algorithm used for reprojecting wind field
-                        to SAR image
-                            -1 : Average,
-                             0 : NearestNeighbour
-                             1 : Bilinear (default),
-                             2 : Cubic,
-                             3 : CubicSpline,
-                             4 : Lancoz
-            force : bool
-                        Force wind calculation if True
-
-        """
         if isinstance(sar_image, str):
             super(SARWind, self).__init__(sar_image, *args, **kwargs)
         elif isinstance(sar_image, Nansat):
