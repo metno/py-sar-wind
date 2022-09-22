@@ -1,15 +1,7 @@
-cftime
-charset-normalizer
-GDAL
-idna
-mkl-fft
-mkl-random
-mkl-service
 nansat
 netCDF4
 numpy
 Pillow
-pythesint
 python-dateutil
 PyYAML
 requests
