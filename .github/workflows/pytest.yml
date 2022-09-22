@@ -26,7 +26,6 @@ jobs:
           pip install -r requirements.txt
           pip install pytest-timeout
           pip install pytest-cov
-          python -c 'import pythesint as pti; pti.update_all_vocabularies()'
       - name: Run Tests
         run: python -m pytest -v --cov=sarwind --timeout=60
       - name: Upload to Codecov
