@@ -1,4 +1,3 @@
-certifi @ file:///opt/conda/conda-bld/certifi_1655968806487/work/certifi
 cftime @ file:///tmp/build/80754af9/cftime_1638358471540/work
 charset-normalizer==2.1.1
 GDAL==3.4.1
