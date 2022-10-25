@@ -2,18 +2,21 @@
              met-sar-vind is licensed under the Apache-2.0 license
              (https://github.com/metno/met-sar-vind/blob/main/LICENSE).
 """
-
-# dummy comment - 2
+import sys
 import argparse
 import warnings
 from datetime import datetime
 from dateutil.parser import parse
 
+from matplotlib import pyplot as plt
+from matplotlib import cm
 import numpy as np
 
 from nansat.nansat import Nansat, Domain, _import_mappers
+#from nansat import Nansat, Domain, _import_mappers
 
-from sarwind.cmod5n import cmod5n_inverse
+#from sarwind.cmod5n import cmod5n_inverse
+from cmod5n import cmod5n_inverse
 
 class TimeDiffError(Exception):
     pass
@@ -68,15 +71,36 @@ class SARWind(Nansat, object):
             self.logger = sar_image.logger
 
         # Check that this is a SAR image with real-valued VV pol NRCS
-        if band_name:
-            self.sigma0_bandNo = self.get_band_number({'name': band_name})
-        else:
-            self.sigma0_bandNo = self.get_band_number({
-                'standard_name':
-                    'surface_backwards_scattering_coefficient_of_radar_wave',
-                'polarization': 'VV',
-                'dataType': '6'
-            })
+        #if band_name:
+        #    self.sigma0_bandNo = self.get_band_number({'name': band_name})
+        #else:
+        #    self.sigma0_bandNo = self.get_band_number({
+        #        'standard_name':
+        #            'surface_backwards_scattering_coefficient_of_radar_wave',
+        #        'polarization': 'VV',
+        #        'dataType': '6'
+        #    })
+
+        self.sigma0_bandNo = self.get_band_number({
+            'standard_name':
+                'surface_backwards_scattering_coefficient_of_radar_wave',
+            'polarization': 'VV',
+             'dataType': '6'
+        })
+
+
+        # Set metadata polarisation if sar_image is SAFE format
+        if ('.SAFE' in sar_image):
+            if ('_1SDH_' in sar_image):
+                self.set_metadata('polarisation', 'HHHV')
+            elif ('_1SDV_' in sar_image):
+                self.set_metadata('polarisation', 'VVVH')
+            elif ('_1SSH_'):
+                self.set_metadata('polarisation', 'HH')
+            elif ('_1SSV_' in sar_image):
+                self.set_metadata('polarisation', 'VV')
+            else:
+                print ('Polarisation unknown')
 
         self.SAR_image_time = self.time_coverage_start
            # get_time(
@@ -88,7 +112,6 @@ class SARWind(Nansat, object):
         if not self.has_band('winddirection'):
             self.set_aux_wind(wind_direction, resample_alg=resample_alg,
                     **kwargs)
-
         # If this is a netcdf file with already calculated windspeed (e.g.
         # created as a SARWind object in order to use the plotting functions),
         # do not recalculate wind
@@ -142,20 +165,6 @@ class SARWind(Nansat, object):
             wdir, wdir_time, wspeed = self._get_aux_wind_from_str(
                                         wind_direction, *args, **kwargs)
 
-        if isinstance(wind_direction, Nansat):
-            wdir, wdir_time, wspeed = self._get_wind_direction_array(
-                                                wind_direction, *args, **kwargs)
-
-        if isinstance(wind_direction, int):
-            wdir, wdir_time, wspeed = self._get_aux_wind_from_int(
-                                        wind_direction)
-
-        if isinstance(wind_direction, np.ndarray):
-            self._check_wind_direction_array_dims(wind_direction)
-            self.set_metadata('WIND_DIRECTION_SOURCE', 'numpy.ndarray')
-            wdir = wind_direction
-            wdir_time = self.SAR_image_time
-            wspeed = None
 
         self.add_band(array=wdir, parameters={
                             'wkv': 'wind_from_direction',
@@ -169,23 +178,19 @@ class SARWind(Nansat, object):
                             'time': wdir_time,
             })
 
-    def _get_aux_wind_from_int(self, wdir):
-        self.set_metadata('WIND_DIRECTION_SOURCE', str(wdir))
-        wdir = wdir*np.ones(self.shape())
-        wdir_time = self.SAR_image_time
-        wspeed = None
-        return wdir, wdir_time, wspeed
-
     def _get_aux_wind_from_str(self, aux_wind_source, *args, **kwargs):
         import nansat.nansat
         mnames = [key.replace('mapper_','') for key in
                     nansat.nansat.nansatMappers]
+        print(mnames)
+
         # check if aux_wind_source is like 'ncep_wind_online', i.e. only
         # mapper name is given. By adding the SAR image time stamp, we
         # can then get the data online
         if aux_wind_source in mnames:
             aux_wind_source = aux_wind_source + \
                     datetime.strftime(self.SAR_image_time, ':%Y%m%d%H%M')
+
         aux = Nansat(aux_wind_source, netcdf_dim={
                 'time': np.datetime64(self.SAR_image_time),
                 'height2': 10, # height dimension used in AROME arctic
@@ -214,26 +219,19 @@ class SARWind(Nansat, object):
                 wind_u_bandNo = aux.get_band_number({
                         'standard_name': 'x_wind_10m',
                     })
+
         self.set_metadata('WIND_DIRECTION_SOURCE', aux_wind_source)
         wdir, wdir_time, wspeed = self._get_wind_direction_array(aux,
                                         *args, **kwargs)
 
         return wdir, wdir_time, wspeed
 
-    def _check_wind_direction_array_dims(self, wind_directions):
-        """
-            Check the provided array of wind directions
-        """
-        if not wind_directions.shape == self.shape():
-            raise RuntimeError('The provided wind direction array ' \
-                        'must have the same shape as the SAR NRCS')
-        return
-
     def _get_wind_direction_array(self, aux_wind, resample_alg=1, *args,
             **kwargs):
         """
             Reproject wind and return the wind directions, time and speed
         """
+
         if not isinstance(aux_wind, Nansat):
             raise ValueError('Input parameter must be of type Nansat')
 
@@ -338,8 +336,12 @@ class SARWind(Nansat, object):
         startTime = datetime.now()
         look_dir = self[self.get_band_number({'standard_name':
                 'sensor_azimuth_angle'})]
+
+        print('self.sigma0_bandNo:')
+        print(self.sigma0_bandNo)
         s0vv = self[self.sigma0_bandNo]
-        if 'HH' in self.get_metadata('polarisation'):
+
+        if ('HH' in self.get_metadata('polarisation')):
             # This is a hack to use another PR model than in the nansat pixelfunctions
             inc = self['incidence_angle']
             # PR from Lin Ren, Jingsong Yang, Alexis Mouche, et al. (2017) [remote sensing]
@@ -396,7 +398,7 @@ class SARWind(Nansat, object):
                 'execute calculate_wind(wind_direction) first.')
 
         sar_windspeed[sar_windspeed<0] = 0
-        palette = jet
+        palette = cm.get_cmap('jet')
 
         if landmask:
             try: # Land mask
@@ -468,8 +470,8 @@ class SARWind(Nansat, object):
                 'execute calculate_wind(wind_direction) before plotting.')
         sar_windspeed[sar_windspeed>maskWindAbove] = np.nan
 
-        winddirReductionFactor = np.round(
-                self.vrt.dataset.RasterXSize/numVectorsX)
+        winddirReductionFactor = int(np.round(
+                self.vrt.dataset.RasterXSize/numVectorsX))
 
         winddir_relative_up = 360 - self[winddirBand] + \
                                     self.azimuth_y()
@@ -544,7 +546,9 @@ class SARWind(Nansat, object):
     def export(self, *args, **kwargs):
         bands = kwargs.pop('bands', None)
         # TODO: add name of original file to metadata
-        super(SARWind, self).export(bands=self.get_bands_to_export(bands), *args, **kwargs)
+        print('self')
+        print(self)
+        super(SARWind, self).export(bands=self.get_bands_to_export(), *args, **kwargs)
 
     def export2thredds(self, *args, **kwargs):
         #bands = kwargs.pop('bands', None)
@@ -593,4 +597,4 @@ if __name__ == '__main__':
     # Save as netCDF file
     if args.netCDF is not None:
         print('Saving output to netCDF file: ' + args.netCDF)
-        sw.export(args.netCDF, bands=[6, 7])  # Exporting windspeed and dir
+        sw.export(args.netCDF, bands=[14, 16])  # Exporting windspeed and dir
