@@ -2,8 +2,7 @@ import os
 import pytest
 
 
-#from sarwind.sarwind import get_nansat
-from sarwind import get_nansat
+from sarwind.sarwind import get_nansat
 from sarwind import SARWind
 
 # Se oppsett og eksempler i https://github.com/metno/discovery-metadata-catalog-ingestor/
@@ -15,7 +14,7 @@ arome_file = 'https://thredds.met.no/thredds/fileServer/aromearcticarchive/2021/
 meps_file = '/lustre/storeB/project/metproduction/products/meps/member_00/meps_det_vdiv_2_5km_20221026T06Z.nc'
 
 @pytest.mark.sarwind
-def testSARWind__get_nansat__returns__nansat(filesDir,mocker):
+def testSARWind__get_nansat__returns__nansat(filesDir, mocker):
     """Tests that get_nansat returns a Nansat object for both the
     sample datasets.
     """
@@ -24,7 +23,7 @@ def testSARWind__get_nansat__returns__nansat(filesDir,mocker):
     arome_ds = os.path.join(filesDir, 'arome_arctic_vtk_20210324T03Z.nc')
     class NansatMocked:
         pass
-    mocker.patch("sarwind.Nansat", return_value=NansatMocked())
+    mocker.patch("sarwind.sarwind.Nansat", return_value=NansatMocked())
     n = get_nansat(sar_ds)
     assert type(n) is NansatMocked
     w = get_nansat(arome_ds)
@@ -98,5 +97,4 @@ def testSARWind_using_s1IWDVsafe_meps_filenames(filesDir):
 
     w = SARWind(sar_ds,model_ds)
     assert type(w) == SARWind
-
 

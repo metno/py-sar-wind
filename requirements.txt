@@ -1,0 +1,12 @@
+GDAL
+nansat
+netCDF4
+numpy
+Pillow
+python-dateutil
+PyYAML
+requests
+scipy
+six
+urllib3
+xdg
