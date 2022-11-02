@@ -3,7 +3,7 @@ import pytest
 
 
 from sarwind.sarwind import get_nansat
-from sarwind import SARWind
+from sarwind.sarwind import SARWind
 
 # Se oppsett og eksempler i https://github.com/metno/discovery-metadata-catalog-ingestor/
 # ang testing. Evt søk i google...
@@ -29,7 +29,6 @@ def testSARWind__get_nansat__returns__nansat(filesDir, mocker):
     w = get_nansat(arome_ds)
     assert type(w) is NansatMocked
 
-@pytest.mark.wind
 def testSARWind__get_aux_wind_from_str__returns__wdir(filesDir, mocker):
     """Tests that calls function _get_aux_wind_from_str.
     """
@@ -38,11 +37,10 @@ def testSARWind__get_aux_wind_from_str__returns__wdir(filesDir, mocker):
     class wdirMocked:
         pass
 
-    mocker.patch("sarwind.SARWind._get_aux_wind_from_str", return_value=wdirMocked())
+    mocker.patch("sarwind.sarwind.SARWind._get_aux_wind_from_str", return_value=wdirMocked())
     n = SARWind._get_aux_wind_from_str(arome_ds)
     assert type(n) is wdirMocked
 
-@pytest.mark.s1EwDh_arome
 def testSARWind_using_s1EWnc_arome_filenames(filesDir):
     """Test that generte wind from Sentinel-1 data in EW-mode,
     DH-polarization and nerCDF format.
@@ -61,7 +59,6 @@ def testSARWind_using_s1EWnc_arome_filenames(filesDir):
     w = SARWind(sar_ds,model_ds)
     assert type(w) == SARWind
 
-@pytest.mark.s1EwDh_meps
 def testSARWind_using_s1EWsafe_meps_filenames(filesDir):
     """Test that generte wind from Sentinel-1 data in EW-mode,
     DH-polarization and SAFE format.
@@ -80,7 +77,6 @@ def testSARWind_using_s1EWsafe_meps_filenames(filesDir):
     assert type(w) == SARWind
 
 
-@pytest.mark.s1IwDv_meps
 def testSARWind_using_s1IWDVsafe_meps_filenames(filesDir):
     """Test that generte wind from Sentinel-1 data in IW-mode,
     DV-polarization and SAFE format.

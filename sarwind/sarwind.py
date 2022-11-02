@@ -14,8 +14,7 @@ import numpy as np
 
 from nansat.nansat import Nansat, Domain, _import_mappers
 
-#from sarwind.cmod5n import cmod5n_inverse
-from cmod5n import cmod5n_inverse
+from sarwind.cmod5n import cmod5n_inverse
 
 class TimeDiffError(Exception):
     pass
