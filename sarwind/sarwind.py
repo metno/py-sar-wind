@@ -117,8 +117,7 @@ class SARWind(Nansat, object):
         Parameters
         -----------
         wind_direction : string
-                    - the name of a Nansat compatible file containing
-                        wind direction information
+                    The name of a Nansat compatible file containing wind direction information
         resample_alg : int
                     Resampling algorithm used for reprojecting wind field
                     to SAR image
