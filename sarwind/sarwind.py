@@ -117,9 +117,6 @@ class SARWind(Nansat, object):
         Parameters
         -----------
         wind_direction : string
-                    Auxiliary wind field information needed to calculate
-                    SAR wind (must be or have wind direction in degrees):
-
                     - the name of a Nansat compatible file containing
                         wind direction information
         resample_alg : int
