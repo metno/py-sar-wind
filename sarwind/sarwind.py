@@ -8,8 +8,6 @@ import warnings
 from datetime import datetime
 from dateutil.parser import parse
 
-from matplotlib import pyplot as plt
-from matplotlib import cm
 import numpy as np
 
 from nansat.nansat import Nansat, Domain, _import_mappers
@@ -31,10 +29,7 @@ class SARWind(Nansat, object):
     sar_image : string
                 The SAR image as a filename
     wind_direction : string
-                Auxiliary wind field information needed to calculate
-                SAR wind (must be or have wind direction in degrees):
-                - the name of a Nansat compatible file containing
-                    wind direction information
+                Filename of wind field dataset. This must be possible to open with Nansat.
     pixel_size : float or int
                 Grid pixel size in metres
     resample_alg : int
@@ -53,10 +48,12 @@ class SARWind(Nansat, object):
 
     def __init__(self, sar_image, wind_direction,
                     band_name=None, pixelsize=500, resample_alg=1, force=False, *args, **kwargs):
-        if isinstance(sar_image, str) & isinstance(wind_direction, str):
-            super(SARWind, self).__init__(sar_image, *args, **kwargs)
-        else:
+
+        if not isinstance(sar_image, str) or not isinstance(wind_direction, str):
             raise ValueError('Input parameter for SAR and wind direction must be of type string')
+
+        super(SARWind, self).__init__(sar_image, *args, **kwargs)
+
 
         # Check that this is a SAR image with real-valued VV pol NRCS
         if band_name:
@@ -121,11 +118,7 @@ class SARWind(Nansat, object):
         Parameters
         -----------
         wind_direction : string
-                    Auxiliary wind field information needed to calculate
-                    SAR wind (must be or have wind direction in degrees):
-
-                    - the name of a Nansat compatible file containing
-                        wind direction information
+                    The name of a Nansat compatible file containing wind direction information
         resample_alg : int
                     Resampling algorithm used for reprojecting wind field
                     to SAR image
@@ -308,9 +301,6 @@ class SARWind(Nansat, object):
         look_dir = self[self.get_band_number({'standard_name':
                 'sensor_azimuth_angle'})]
 
-        print('self.sigma0_bandNo:')
-        print(self.sigma0_bandNo)
-        print(self)
         s0vv = self[self.sigma0_bandNo]
 
         if ('HH' in self.get_metadata('polarisation')):
@@ -409,99 +399,6 @@ class SARWind(Nansat, object):
 
         nansat_geotiff.write_geotiffimage(filename)
 
-
-
-    def plot(self, filename=None, numVectorsX = 16, show=True,
-            clim=[0,20], maskWindAbove=35,
-            windspeedBand='windspeed', winddirBand='winddirection',
-            northUp_eastRight=True, landmask=True, icemask=True):
-        """ Basic plotting function showing CMOD wind speed
-        overlaid vectors in SAR image projection
-
-        parameters
-        ----------
-        filename : string
-        numVectorsX : int
-            Number of wind vectors along first dimension
-        show : Boolean
-        clim : list
-            Color limits of the image.
-        windspeedBand : string or int
-        winddirBand : string or int
-        landmask : Boolean
-        icemask : Boolean
-        maskWindAbove : int
-
-        """
-
-        try:
-            sar_windspeed, palette = self._get_masked_windspeed(landmask,
-                    icemask, windspeedBand=windspeedBand)
-        except:
-            raise ValueError('SAR wind has not been calculated, ' \
-                'execute calculate_wind(wind_direction) before plotting.')
-        sar_windspeed[sar_windspeed>maskWindAbove] = np.nan
-
-        winddirReductionFactor = int(np.round(
-                self.vrt.dataset.RasterXSize/numVectorsX))
-
-        winddir_relative_up = 360 - self[winddirBand] + \
-                                    self.azimuth_y()
-        indX = range(0, self.vrt.dataset.RasterXSize, winddirReductionFactor)
-        indY = range(0, self.vrt.dataset.RasterYSize, winddirReductionFactor)
-        X, Y = np.meshgrid(indX, indY)
-        try: # scaling of wind vector length, if model wind is available
-            model_windspeed = self['model_windspeed']
-            model_windspeed = model_windspeed[Y, X]
-        except:
-            model_windspeed = 8*np.ones(X.shape)
-
-        Ux = np.sin(np.radians(winddir_relative_up[Y, X]))*model_windspeed
-        Vx = np.cos(np.radians(winddir_relative_up[Y, X]))*model_windspeed
-
-        # Make sure North is up, and east is right
-        if northUp_eastRight:
-            lon, lat = self.get_corners()
-            if lat[0] < lat[1]:
-                sar_windspeed = np.flipud(sar_windspeed)
-                Ux = -np.flipud(Ux)
-                Vx = -np.flipud(Vx)
-            if lon[0] > lon[2]:
-                sar_windspeed = np.fliplr(sar_windspeed)
-                Ux = np.fliplr(Ux)
-                Vx = np.fliplr(Vx)
-
-        # Plotting
-        figSize = sar_windspeed.shape
-        legendPixels = 60.0
-        legendPadPixels = 5.0
-        legendFraction = legendPixels/figSize[0]
-        legendPadFraction = legendPadPixels/figSize[0]
-        dpi=100.0
-
-        fig = plt.figure()
-        fig.set_size_inches((figSize[1]/dpi, (figSize[0]/dpi)*
-                                (1+legendFraction+legendPadFraction)))
-        ax = fig.add_axes([0,0,1,1+legendFraction])
-        ax.set_axis_off()
-        plt.imshow(sar_windspeed, cmap=palette, interpolation='nearest')
-        plt.clim(clim)
-        cbar = plt.colorbar(orientation='horizontal', shrink=.80,
-                     aspect=40,
-                     fraction=legendFraction, pad=legendPadFraction)
-        cbar.ax.set_ylabel('[m/s]', rotation=0) # could replace m/s by units from metadata
-        cbar.ax.yaxis.set_label_position('right')
-        # TODO: plotting function should be improved to give
-        #       nice results for images of all sized
-        ax.quiver(X, Y, Ux, Vx, angles='xy', width=0.004,
-                    scale=200, scale_units='width',
-                    color=[.0, .0, .0], headaxislength=4)
-        if filename is not None:
-            fig.savefig(filename, pad_inches=0, dpi=dpi)
-        if show:
-            plt.show()
-        return fig
-
     def get_bands_to_export(self, bands):
         if not bands:
             bands = [
@@ -518,14 +415,7 @@ class SARWind(Nansat, object):
     def export(self, *args, **kwargs):
         bands = kwargs.pop('bands', None)
         # TODO: add name of original file to metadata
-        print('bands')
-        print(bands)
 
-        print('self')
-        print(self)
-
-        print('self.get_bands_to_export()')
-        print(self.get_bands_to_export(bands))
         super(SARWind, self).export(bands=self.get_bands_to_export(bands), *args, **kwargs)
 
     def export2thredds(self, *args, **kwargs):
@@ -533,44 +423,3 @@ class SARWind(Nansat, object):
         # TODO: add name of original file to metadata
         super(SARWind, self).export2thredds(*args, **kwargs)
 
-###################################
-#    If run from command line
-###################################
-def create_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', dest='SAR_filename',
-                        required=True, help='SAR image filename')
-    parser.add_argument('-w', dest='wind_direction',
-            required = True,
-            help='Wind direction model filename')
-    parser.add_argument('-n', dest='netCDF',
-            help='Export numerical output to NetCDF file')
-    parser.add_argument('-f', dest='figure_filename',
-            help='Save wind plot as figure (e.g. PNG or JPEG)')
-    parser.add_argument('-p', dest='pixelsize', default=500,
-            help='Pixel size for SAR wind calculation (default = 500 m)',
-                type=float)
-    return parser
-
-
-if __name__ == '__main__':
-
-    parser = create_parser()
-    args = parser.parse_args()
-
-    if args.figure_filename is None and args.netCDF is None:
-        raise ValueError('Please add filename of processed figure (-f) or' \
-                ' netcdf (-n)')
-
-    # Read SAR image
-    sw = SARWind(args.SAR_filename, args.wind_direction, pixelsize=args.pixelsize)
-
-    # Save figure
-    if args.figure_filename is not None:
-        print('Saving output as figure: ' + args.figure_filename)
-        plt = sw.plot(filename=args.figure_filename, show=False)
-
-    # Save as netCDF file
-    if args.netCDF is not None:
-        print('Saving output to netCDF file: ' + args.netCDF)
-        sw.export(args.netCDF, bands=None)  # Exporting windspeed and dir
