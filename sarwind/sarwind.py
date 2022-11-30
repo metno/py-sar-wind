@@ -304,9 +304,6 @@ class SARWind(Nansat, object):
         look_dir = self[self.get_band_number({'standard_name':
                 'sensor_azimuth_angle'})]
 
-        print('self.sigma0_bandNo:')
-        print(self.sigma0_bandNo)
-        print(self)
         s0vv = self[self.sigma0_bandNo]
 
         if ('HH' in self.get_metadata('polarisation')):
