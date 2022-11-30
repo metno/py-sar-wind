@@ -32,8 +32,6 @@ class SARWind(Nansat, object):
                 The SAR image as a filename
     wind_direction : string
                 Filename of wind field dataset. This must be possible to open with Nansat.
-                - the name of a Nansat compatible file containing
-                    wind direction information
     pixel_size : float or int
                 Grid pixel size in metres
     resample_alg : int
