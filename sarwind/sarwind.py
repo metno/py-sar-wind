@@ -31,8 +31,7 @@ class SARWind(Nansat, object):
     sar_image : string
                 The SAR image as a filename
     wind_direction : string
-                Auxiliary wind field information needed to calculate
-                SAR wind (must be or have wind direction in degrees):
+                Filename of wind field dataset. This must be possible to open with Nansat.
                 - the name of a Nansat compatible file containing
                     wind direction information
     pixel_size : float or int
