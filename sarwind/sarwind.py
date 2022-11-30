@@ -51,7 +51,6 @@ class SARWind(Nansat, object):
     def __init__(self, sar_image, wind_direction,
                     band_name=None, pixelsize=500, resample_alg=1, force=False, *args, **kwargs):
         if not isinstance(sar_image, str) or not isinstance(wind_direction, str):
-        else:
             raise ValueError('Input parameter for SAR and wind direction must be of type string')
 
         # Check that this is a SAR image with real-valued VV pol NRCS
