@@ -66,7 +66,6 @@ class SARWind(Nansat, object):
                 'dataType': '6'
             })
 
-
         # Set metadata polarisation if sar_image is SAFE format
         if ('.SAFE' in sar_image):
             if ('_1SDH_' in sar_image):
@@ -79,7 +78,7 @@ class SARWind(Nansat, object):
                 self.set_metadata('polarisation', 'VV')
             else:
                 raise ValueError('Polarisation unknown')
-
+                
         self.SAR_image_time = self.time_coverage_start
 
         if pixelsize != 'fullres':
@@ -360,7 +359,7 @@ class SARWind(Nansat, object):
                 'execute calculate_wind(wind_direction) first.')
 
         sar_windspeed[sar_windspeed<0] = 0
-        palette = cm.get_cmap('jet')
+        palette = jet
 
         if landmask:
             try: # Land mask
