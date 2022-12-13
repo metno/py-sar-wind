@@ -33,7 +33,7 @@ def testSARWind__get_aux_wind_from_str__returns__wdir(filesDir, mocker):
     """Tests that calls function _get_aux_wind_from_str.
     """
 
-    arome_ds = os.path.join(filesDir, 'arome_arctic_vtk_20210324T03Z.nc')
+    arome_ds = os.path.join(filesDir, 'arome_arctic_vtk_20210324T03Z_subsample_v2.nc')
     class wdirMocked:
         pass
 
@@ -46,9 +46,8 @@ def testSARWind_using_s1EWnc_arome_filenames(filesDir):
     DH-polarization and nerCDF format.
     Wind direction from Arome Arctic model.
     """
-    sar_ds = os.path.join(filesDir, 'S1A_EW_GRDM_1SDH_20210324T035507_20210324T035612_037135_045F42_5B4C.nc')
-    #sar_ds = 'http://nbstds.met.no/thredds/fileServer/NBS/S1A/2021/03/24/EW/S1A_EW_GRDM_1SDH_20210324T035507_20210324T035612_037135_045F42_5B4C.nc'
-    model_ds = os.path.join(filesDir, 'arome_arctic_vtk_20210324T03Z.nc')
+    sar_ds = os.path.join(filesDir, 'S1A_EW_GRDM_1SDH_20210324T035507_20210324T035612_037135_045F42_5B4C_nansat005.nc')
+    model_ds = os.path.join(filesDir, 'arome_arctic_vtk_20210324T03Z_nansat05.nc')
 
     if os.path.isfile(sar_ds) == False:
         raise IOError ('No SAR data available in :%s' % (sar_ds))
@@ -59,15 +58,17 @@ def testSARWind_using_s1EWnc_arome_filenames(filesDir):
     w = SARWind(sar_ds,model_ds)
     assert type(w) == SARWind
 
+
 def testSARWind_using_s1EWsafe_meps_filenames(filesDir):
     """Test that generte wind from Sentinel-1 data in EW-mode,
     DH-polarization and SAFE format.
     Wind direction from MEPS model.
     """
-    sar_ds = os.path.join(filesDir, 'S1A_EW_GRDM_1SDH_20221026T054324_20221026T054411_045609_05740B_6B3F.SAFE')
-    model_ds = os.path.join(filesDir, 'meps_det_vdiv_2_5km_20221026T06Z.nc')
+    #sar_ds = os.path.join(filesDir, 'S1A_EW_GRDM_1SDH_20221026T054324_20221026T054411_045609_05740B_6B3F.SAFE')
+    sar_ds = os.path.join(filesDir, 'S1A_EW_GRDM_1SDH_20221026T054324_20221026T054411_045609_05740B_6B3F.SAFE_nansat005.nc')
+    model_ds = os.path.join(filesDir, 'meps_det_vdiv_2_5km_20221026T06Z_nansat05.nc')
 
-    if os.path.isdir(sar_ds) == False:
+    if ((os.path.isdir(sar_ds)== False) & (os.path.isfile(sar_ds)== False)):
         raise IOError ('No SAR data available in :%s' % (sar_ds))
 
     if os.path.isfile(model_ds) == False:
@@ -82,10 +83,12 @@ def testSARWind_using_s1IWDVsafe_meps_filenames(filesDir):
     DV-polarization and SAFE format.
     Wind direction from MEPS model.
     """
-    sar_ds = os.path.join(filesDir, 'S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A.SAFE')
-    model_ds = os.path.join(filesDir, 'meps_det_vdiv_2_5km_20221026T06Z.nc')
+    #sar_ds = os.path.join(filesDir, 'S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A.SAFE')
+    sar_ds = os.path.join(filesDir, 'S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A.SAFE_nansat005.nc')
+    #model_ds = os.path.join(filesDir, 'meps_det_vdiv_2_5km_20221026T06Z.nc')
+    model_ds = os.path.join(filesDir, 'meps_det_vdiv_2_5km_20221026T06Z_nansat05.nc')
 
-    if os.path.isdir(sar_ds) == False:
+    if ((os.path.isdir(sar_ds) == False) & (os.path.isfile(sar_ds)== False)):
         raise IOError ('No SAR data available in :%s' % (sar_ds))
 
     if os.path.isfile(model_ds) == False:
