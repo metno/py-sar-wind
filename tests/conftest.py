@@ -59,6 +59,35 @@ def filesDir():
     return theDir
 
 
+@pytest.fixture(scope="session")
+def sarEW_NBS():
+    filename = "S1A_EW_GRDM_1SDH_20210324T035507_20210324T035612_037135_045F42_5B4C.NBS.nc"
+
+
+@pytest.fixture(scope="session")
+def sarEW_SAFE():
+    filename = "S1A_EW_GRDM_1SDH_20221026T054324_20221026T054411_045609_05740B_6B3F.SAFE.nc"
+    return os.path.join(filesDir(), filename)
+
+
+@pytest.fixture(scope="session")
+def sarIW_SAFE():
+    filename = "S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A.SAFE.nc"
+    return os.path.join(filesDir(), filename)
+
+
+@pytest.fixture(scope="session")
+def meps():
+    filename = "meps_det_vdiv_2_5km_20221026T06Z_nansat05.nc"
+    return os.path.join(filesDir(), filename)
+
+
+@pytest.fixture(scope="session")
+def arome():
+    filename = "arome_arctic_vtk_20210324T03Z_nansat05.nc"
+    return os.path.join(filesDir(), filename)
+
+
 @pytest.fixture(scope="function")
 def fncDir(tmpDir):
     """A temporary folder for a single test function."""
