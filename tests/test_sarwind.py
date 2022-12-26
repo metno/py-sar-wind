@@ -5,9 +5,6 @@ import pytest
 from sarwind.sarwind import get_nansat
 from sarwind.sarwind import SARWind
 
-# Se oppsett og eksempler i https://github.com/metno/discovery-metadata-catalog-ingestor/
-# ang testing. Evt søk i google...
-
 @pytest.mark.sarwind
 def testSARWind__get_nansat__returns__nansat(filesDir, mocker):
     """ Test that get_nansat returns a Nansat object
@@ -38,6 +35,7 @@ def testSARWind__get_aux_wind_from_str__returns__wdir(arome, mocker):
     assert type(n) is wdirMocked
 
 
+@pytest.mark.nbs
 @pytest.mark.sarwind
 def testSARWind_using_s1EWnc_arome_filenames(sarEW_NBS, arome):
     """ Test that wind is generated from Sentinel-1 data in EW-mode,
@@ -48,6 +46,7 @@ def testSARWind_using_s1EWnc_arome_filenames(sarEW_NBS, arome):
     assert type(w) == SARWind
 
 
+@pytest.mark.safe
 @pytest.mark.sarwind
 def testSARWind_using_s1EWsafe_meps_filenames(sarEW_SAFE, meps):
     """ Test that wind is generated from Sentinel-1 data in EW-mode,
@@ -58,6 +57,7 @@ def testSARWind_using_s1EWsafe_meps_filenames(sarEW_SAFE, meps):
     assert type(w) == SARWind
 
 
+@pytest.mark.safe
 @pytest.mark.sarwind
 def testSARWind_using_s1IWDVsafe_meps_filenames(sarIW_SAFE, meps):
     """ Test that wind is generated from Sentinel-1 data in IW-mode,
