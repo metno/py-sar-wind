@@ -1,8 +1,7 @@
-import os
 import pytest
 
-
 from sarwind.sarwind import SARWind
+
 
 @pytest.mark.sarwind
 def testSARWind__get_aux_wind_from_str__returns__wdir(arome, mocker):
@@ -12,7 +11,7 @@ def testSARWind__get_aux_wind_from_str__returns__wdir(arome, mocker):
     class wdirMocked:
         pass
 
-    mocker.patch("sarwind.sarwind.SARWind._get_aux_wind_from_str", return_value = wdirMocked())
+    mocker.patch("sarwind.sarwind.SARWind._get_aux_wind_from_str", return_value=wdirMocked())
     print(arome)
     n = SARWind._get_aux_wind_from_str(arome)
     assert type(n) is wdirMocked
