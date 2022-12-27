@@ -65,18 +65,18 @@ def cmod5n_forward(v, phi, theta):
 
     GAM = C[9] + C[10] * X + C[11] * (X ** 2)
     S0 = C[12] + C[13] * X
-    
+
     # V is missing! Using V=v as substitute, this is apparently correct
     V = v
     S = A2 * V
-    S_vec = S.copy() 
+    S_vec = S.copy()
     SlS0 = (S_vec < S0)
     S_vec[SlS0] = S0[SlS0]
     A3 = 1. / (1. + exp(-S_vec))
     SlS0 = (S < S0)
     A3[SlS0] = A3[SlS0] * (S[SlS0] / S0[SlS0]) ** (S0[SlS0] * (1. - A3[SlS0]))
     B0 = (A3 ** GAM) * 10. ** (A0 + A1 * V)
-        
+
     # B1: FUNCTION OF WIND SPEED AND INCIDENCE ANGLE
     B1 = C[15] * V * (0.5 + X - tanh(4. * (X + C[16] + C[17] * V)))
     B1 = C[14] * (1. + X) - B1
@@ -96,17 +96,19 @@ def cmod5n_forward(v, phi, theta):
     cmod5_n = B0 * (1.0 + B1 * CSFI + B2 * CS2FI) ** ZPOW
 
     return cmod5_n
-    
+
 
 def cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10):
-    """The function iterates the forward CMOD5N <cmod5n_forward> function until agreement with input
-     (observed) sigma0 values
+    """The function iterates the forward CMOD5N <cmod5n_forward>
+    function until agreement with input (observed) sigma0 values.
 
     Parameters:
         sigma0_obs: float, numpy.array
-             2D array with Normalized Radar Cross Section (NRCS) [linear units]
+             2D array with Normalized Radar Cross Section (NRCS)
+             [linear units]
         phi: float, numpy.array
-            2D array with angles between azimuth and wind direction in [deg] (= D - AZM)
+            2D array with angles between azimuth and wind direction in
+            [deg] (= D - AZM)
         incidence: float, numpy.array
             incidence angles in [deg]
         iterations: int
@@ -120,10 +122,10 @@ def cmod5n_inverse(sigma0_obs, phi, incidence, iterations=10):
     # First guess wind speed
     v = array([10.]) * ones(sigma0_obs.shape)
     step = 10.
-    
+
     # Iterating until error is smaller than threshold
     for iterno in range(1, iterations):
-        #print iterno
+        # print iterno
         sigma0_calc = cmod5n_forward(v, phi, incidence)
         ind = sigma0_calc - sigma0_obs > 0
         v = v + step
