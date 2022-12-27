@@ -70,7 +70,7 @@ def cmod5n_forward(v, phi, theta):
     V = v
     S = A2 * V
     S_vec = S.copy() 
-    SlS0 = [S_vec < S0]
+    SlS0 = (S_vec < S0)
     S_vec[SlS0] = S0[SlS0]
     A3 = 1. / (1. + exp(-S_vec))
     SlS0 = (S < S0)

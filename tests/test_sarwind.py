@@ -2,24 +2,7 @@ import os
 import pytest
 
 
-from sarwind.sarwind import get_nansat
 from sarwind.sarwind import SARWind
-
-@pytest.mark.sarwind
-def testSARWind__get_nansat__returns__nansat(filesDir, mocker):
-    """ Test that get_nansat returns a Nansat object
-    """
-    # Sample datasets
-    sar_ds = "sar_filename.nc"
-    arome_ds = "wind_filename.nc"
-    class NansatMocked:
-        pass
-    mocker.patch("sarwind.sarwind.Nansat", return_value=NansatMocked())
-    n = get_nansat(sar_ds)
-    assert type(n) is NansatMocked
-    w = get_nansat(arome_ds)
-    assert type(w) is NansatMocked
-
 
 @pytest.mark.sarwind
 def testSARWind__get_aux_wind_from_str__returns__wdir(arome, mocker):
