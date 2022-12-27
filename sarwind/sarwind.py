@@ -103,7 +103,7 @@ class SARWind(Nansat, object):
         wind : string
                     The name of a Nansat compatible file containing wind direction information
         """
-        wdir, wdir_time, wspeed = self._get_aux_wind_from_str(wind, *args, **kwargs)
+        wspeed, wdir, wdir_time = self._get_aux_wind_from_str(wind, *args, **kwargs)
 
 
         self.add_band(array=wdir, parameters={
@@ -159,11 +159,10 @@ class SARWind(Nansat, object):
                         'standard_name': 'x_wind_10m',
                     })
         self.set_metadata('WIND_DIRECTION_SOURCE', aux_wind_source)
-        wdir, wdir_time, wspeed = self._get_wind_direction_array(aux,
+        wspeed, wdir, wdir_time = self._get_wind_direction_array(aux,
                                         *args, **kwargs)
 
-        return wdir, wdir_time, wspeed
-
+        return wspeed, wdir, wdir_time
 
     def _get_wind_direction_array(self, aux_wind, resample_alg=1, *args,
             **kwargs):
@@ -223,48 +222,38 @@ class SARWind(Nansat, object):
 
         # Check time difference between SAR image and wind direction object
         timediff = self.time_coverage_start.replace(tzinfo=None) - \
-                parse(aux_wind.get_metadata('time_coverage_start'))
+            parse(aux_wind.get_metadata('time_coverage_start'))
 
-        try:
-            hoursDiff = np.abs(timediff.total_seconds()/3600.)
-        except: # for < python2.7
-            secondsDiff = (timediff.microseconds +
-                            (timediff.seconds + timediff.days *
-                            24 * 3600) * 10**6) / 10**6
-            hoursDiff = np.abs(secondsDiff/3600.)
+        hoursDiff = np.abs(timediff.total_seconds()/3600.)
 
-        print('Time difference between SAR image and wind direction: ' \
-                + '%.2f' % hoursDiff + ' hours')
+        print('Time difference between SAR image and wind direction: %.2f hours' % hoursDiff)
         print('SAR image time: ' + str(self.time_coverage_start))
         print('Wind dir time: ' + str(parse(aux_wind.get_metadata('time_coverage_start'))))
         if hoursDiff > 3:
             warnings.warn('Time difference exceeds 3 hours!')
             if hoursDiff > 12:
-                raise TimeDiffError('Time difference is %.f - impossible to ' \
-                        'estimate reliable wind field' %hoursDiff)
+                raise TimeDiffError('Time difference is %.f - impossible to '
+                                    'estimate reliable wind field' % hoursDiff)
 
         # Get band numbers of eastward and northward wind
-        eastward_wind_bandNo = aux_wind.get_band_number({
-                    'standard_name': 'eastward_wind',
-                })
-        northward_wind_bandNo = aux_wind.get_band_number({
-                    'standard_name': 'northward_wind',
-                })
+        eastward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'eastward_wind'})
+        northward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'northward_wind'})
 
         # Get mask, and eastward and northward wind speed components
         mask = aux_wind['swathmask']
         uu = aux_wind[eastward_wind_bandNo]
-        uu[mask==0] = np.nan
+        uu[mask == 0] = np.nan
         vv = aux_wind[northward_wind_bandNo]
-        vv[mask==0] = np.nan
+        vv[mask == 0] = np.nan
 
         if uu is None:
             raise Exception('Could not read wind vectors')
         # 0 degrees meaning wind from North, 90 degrees meaning wind from East
         # Return wind direction, time, wind speed
-        return np.degrees(np.arctan2(-uu, -vv)), \
-                aux_wind.time_coverage_start, \
-                np.sqrt(np.power(uu, 2) + np.power(vv, 2))
+        wind_dir = np.degrees(np.arctan2(-uu, -vv))
+        time = aux_wind.time_coverage_start
+        wind_speed = np.sqrt(np.power(uu, 2) + np.power(vv, 2))
+        return wind_speed, wind_dir, time
 
     def _calculate_wind(self):
         """ Calculate wind speed from SAR sigma0 in VV polarization.
@@ -283,7 +272,7 @@ class SARWind(Nansat, object):
             inc = self['incidence_angle']
             # PR from Lin Ren, Jingsong Yang, Alexis Mouche, et al. (2017) [remote sensing]
             PR = np.square(1.+2.*np.square(np.tan(inc*np.pi/180.))) / \
-                    np.square(1.+1.3*np.square(np.tan(inc*np.pi/180.)))
+                np.square(1.+1.3*np.square(np.tan(inc*np.pi/180.)))
             s0hh_band_no = self.get_band_number({
                 'standard_name':
                     'surface_backwards_scattering_coefficient_of_radar_wave',
@@ -307,12 +296,14 @@ class SARWind(Nansat, object):
 
         # Add wind speed and direction as bands
         wind_direction_time = self.get_metadata(key='time', band_id='winddirection')
-        self.add_band(array=windspeed, parameters={
-                        'wkv': 'wind_speed',
-                        'name': 'windspeed',
-                        'time': self.time_coverage_start,
-                        'wind_direction_time': wind_direction_time
-                })
+        self.add_band(
+            array=windspeed,
+            parameters={
+                'wkv': 'wind_speed',
+                'name': 'windspeed',
+                'time': self.time_coverage_start,
+                'wind_direction_time': wind_direction_time
+            })
 
         # TODO: Replace U and V bands with pixelfunctions
         u = -windspeed*np.sin((180.0 - self['winddirection'])*np.pi/180.0)
@@ -321,10 +312,7 @@ class SARWind(Nansat, object):
                             'wkv': 'eastward_wind',
                             'time': wind_direction_time,
         })
-        self.add_band(array=v, parameters={
-                            'wkv': 'northward_wind',
-                            'time': wind_direction_time,
-        })
+        self.add_band(array=v, parameters={'wkv': 'northward_wind', 'time': wind_direction_time})
 
         # set winddir_time to global metadata
         self.set_metadata('winddir_time', str(wind_direction_time))
@@ -332,11 +320,11 @@ class SARWind(Nansat, object):
     def get_bands_to_export(self, bands):
         if not bands:
             bands = [
-                    self.get_band_number('valid'),
-                    self.get_band_number('winddirection'),
-                    self.get_band_number('windspeed'),
-                    self.get_band_number('model_windspeed'),
-                ]
+                self.get_band_number('valid'),
+                self.get_band_number('winddirection'),
+                self.get_band_number('windspeed'),
+                self.get_band_number('model_windspeed'),
+            ]
         return bands
 
     def export(self, *args, **kwargs):
