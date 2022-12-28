@@ -13,6 +13,7 @@ def testSARWind__set_aux_wind(monkeypatch):
     _get_aux_wind_from_str and Nansat.add_band.
     """
     mock1_called = 0
+
     def mock1(*a):
         nonlocal mock1_called
         mock1_called += 1
@@ -22,10 +23,11 @@ def testSARWind__set_aux_wind(monkeypatch):
         return speed, dir, time
 
     mock2_called = 0
+
     def mock2(*a, **kw):
         nonlocal mock2_called
         mock2_called += 1
-    
+
     with monkeypatch.context() as mp:
         mp.setattr(SARWind, "_get_aux_wind_from_str", mock1)
         mp.setattr(SARWind, "add_band", mock2)
