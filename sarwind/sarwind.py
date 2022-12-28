@@ -101,6 +101,8 @@ class SARWind(Nansat, object):
         wind : string
                     The name of a Nansat compatible file containing wind direction information
         """
+        if type(wind) is not str:
+            raise TypeError("wind must be of type string")
         wspeed, wdir, wdir_time = self._get_aux_wind_from_str(wind, *args, **kwargs)
 
         self.add_band(
