@@ -24,8 +24,6 @@ System for SAR wind processing.
 
 ## User stories
 
-See explanation in https://it.pages.met.no/kurs/it-architecture-intro/#8 and onwards in the presentation made by Arnulf.
 
 ## Non-functional requirements
 
-See explanation in https://it.pages.met.no/kurs/it-architecture-intro/#13
