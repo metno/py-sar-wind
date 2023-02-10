@@ -40,7 +40,7 @@ class SARData():
 
     """
 
-    def __init__(self, endpoint='https://nbs.csw.met.no/csw', bbox=None, start=None, stop=None, 
+    def __init__(self, endpoint='https://nbs.csw.met.no/csw', bbox=None, start=None, stop=None,
                  kw_names=None, crs='urn:ogc:def:crs:OGC:1.3:CRS84', *args, **kwargs):
         constraints = []
         csw = None
@@ -48,7 +48,7 @@ class SARData():
             try:
                 # connect
                 csw = CatalogueServiceWeb(endpoint, timeout=60)
-            except:
+            except Exception:
                 pass
 
         if kw_names:
