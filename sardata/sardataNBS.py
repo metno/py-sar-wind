@@ -6,6 +6,7 @@ from owslib import fes
 from owslib.fes import SortBy, SortProperty
 from owslib.csw import CatalogueServiceWeb
 
+
 class SARData():
     """
      A class for getting Sentinel-1 netCDF data from the Norwegian Ground Segment (NBS)
@@ -81,10 +82,9 @@ class SARData():
         self.url_opendap = url_opendap
 
 
-
-
     def _get_csw_records(self, csw, filter_list, pagesize=2, maxrecords=10):
-        """Iterate `maxrecords`/`pagesize` times until the requested value in
+        """
+        Iterate `maxrecords`/`pagesize` times until the requested value in
         `maxrecords` is reached.
         """
         # Iterate over sorted results.
