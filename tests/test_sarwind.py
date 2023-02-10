@@ -5,6 +5,9 @@ import numpy as np
 
 from sarwind.sarwind import SARWind
 
+from sardata.sardataNBS import SARData
+from datetime import datetime, timedelta
+import pytz
 
 @pytest.mark.unittests
 @pytest.mark.sarwind
@@ -79,3 +82,15 @@ def testSARWind_using_s1IWDVsafe_meps_filenames(sarIW_SAFE, meps):
     """
     w = SARWind(sarIW_SAFE, meps)
     assert type(w) == SARWind
+
+@pytest.mark.sardata
+def testSARData_from_NBS():
+    """ Test using CSW for reading Sentinel-1 data.
+        This test requres access to https://nbs.csw.met.no/csw
+    """
+    bbox = [-10, 75, 40, 85]
+    stop = datetime(2022, 1, 8, 5, 30, 59).replace(tzinfo=pytz.utc)
+    start = stop - timedelta(days=1)
+
+    sw = SARData(bbox=bbox, start=start, stop=stop, kw_name='S1A*')
+    assert type(sw) == SARData
