@@ -81,7 +81,6 @@ class SARData():
                     url_opendap.append(ref['url'])
         self.url_opendap = url_opendap
 
-
     def _get_csw_records(self, csw, filter_list, pagesize=2, maxrecords=10):
         """
         Iterate `maxrecords`/`pagesize` times until the requested value in
