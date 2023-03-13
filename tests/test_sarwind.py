@@ -1,14 +1,7 @@
 import pytest
 import datetime
-
 import numpy as np
-
 from sarwind.sarwind import SARWind
-
-from sardata.sardataNBS import SARData
-import pytz
-from owslib import fes
-from unittest import mock
 
 
 @pytest.mark.unittests
