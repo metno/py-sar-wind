@@ -1,10 +1,6 @@
 import pytest
 import datetime
 
-import numpy as np
-
-from sarwind.sarwind import SARWind
-
 from sardata.sardataNBS import SARData
 import pytz
 from owslib import fes
@@ -50,19 +46,24 @@ def testSARData_from_NBS(mock_csw, mock_get_csw_records):
 
     myrec_val = Myval_class
     myrec_val.references = [{'scheme': 'OPENDAP:OPENDAP',
-                  'url': 'https://nbstds.met.no/thredds/dodsC/NBS/S2B/2022/02/08/S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'},
-                 {'scheme': 'OGC:WMS',
-                  'url': 'https://nbswms.met.no/thredds/wms_ql/NBS/S2B/2022/02/08/S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc?SERVICE=WMS&REQUEST=GetCapabilities'},
-                 {'scheme': 'download',
-                  'url': 'https://nbstds.met.no/thredds/fileServer/NBS/S2B/2022/02/08/S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'},
-                 {'scheme': None,
-                  'url': "https://colhub.met.no/odata/v1/Products('2a34c82f-675a-4304-af4b-b1c3d8030824')/$value"}]
+                             'url': 'https://nbstds.met.no/thredds/dodsC/NBS/S2B/2022/02/08/\
+                             S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'},
+                            {'scheme': 'OGC:WMS',
+                             'url': 'https://nbswms.met.no/thredds/wms_ql/NBS/S2B/2022/02/08/\
+                             S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc\
+                             ?SERVICE=WMS&REQUEST=GetCapabilities'},
+                            {'scheme': 'download',
+                             'url': 'https://nbstds.met.no/thredds/fileServer/NBS/S2B/2022/02/08/\
+                             S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'},
+                            {'scheme': None,
+                             'url': "https://colhub.met.no/odata/v1/Products(\
+                             '2a34c82f-675a-4304-af4b-b1c3d8030824')/$value"}]
     mycsw = Mycsw_class
-    mycsw.records = {'key1':myrec_val}
+    mycsw.records = {'key1': myrec_val}
 
     mock_csw.return_value = mycsw()
     mock_get_csw_records.return_value = mycsw()
     for (key, val) in list(mycsw.records.items()):
         sw = SARData()
-        assert sw.url_opendap[0] == 'https://nbstds.met.no/thredds/dodsC/NBS/S2B/2022/02/08/S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'
-
+        assert sw.url_opendap[0] == 'https://nbstds.met.no/thredds/dodsC/NBS/S2B/2022/02/08/\
+        S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'
