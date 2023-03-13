@@ -6,6 +6,7 @@ from owslib import fes
 from owslib.fes import SortBy, SortProperty
 from owslib.csw import CatalogueServiceWeb
 
+
 class SARData():
     """
      A class for getting Sentinel-1 netCDF data from the Norwegian Ground Segment (NBS)
@@ -77,11 +78,10 @@ class SARData():
                 if ref['scheme'] == 'OPENDAP:OPENDAP':
                     url_opendap.append(ref['url'])
         self.url_opendap = url_opendap
-    
+
     def _get_csw_connection(self, endpoint):
         csw = CatalogueServiceWeb(endpoint, timeout=60)
         return csw
-        
 
     def _get_freetxt_search(self, kw_names):
         """
