@@ -6,7 +6,6 @@ from owslib import fes
 from owslib.fes import SortBy, SortProperty
 from owslib.csw import CatalogueServiceWeb
 
-
 class SARData():
     """
      A class for getting Sentinel-1 netCDF data from the Norwegian Ground Segment (NBS)
@@ -48,14 +47,12 @@ class SARData():
         while csw is None:
             try:
                 # connect
-                csw = CatalogueServiceWeb(endpoint, timeout=60)
+                csw = self._get_csw_connection(endpoint)
             except Exception:
                 pass
 
         if kw_names:
-            kw = dict(wildCard="*", escapeChar="\\", singleChar="?", propertyname="apiso:AnyText")
-            or_filt = fes.Or([
-                fes.PropertyIsLike(literal=("*%s*" % val), **kw) for val in kw_names])
+            or_filt = self._get_freetxt_search(self, kw_names)
             constraints.append(or_filt)
 
         if all(v is not None for v in [start, stop]):
@@ -80,6 +77,20 @@ class SARData():
                 if ref['scheme'] == 'OPENDAP:OPENDAP':
                     url_opendap.append(ref['url'])
         self.url_opendap = url_opendap
+    
+    def _get_csw_connection(self, endpoint):
+        csw = CatalogueServiceWeb(endpoint, timeout=60)
+        return csw
+        
+
+    def _get_freetxt_search(self, kw_names):
+        """
+        Retuns a CSW search object based on input string(s)
+        """
+        kw = dict(wildCard="*", escapeChar="\\", singleChar="?", propertyname="apiso:AnyText")
+        or_filt = fes.Or([
+            fes.PropertyIsLike(literal=("*%s*" % val), **kw) for val in kw_names])
+        return or_filt
 
     def _get_csw_records(self, csw, filter_list, pagesize=2, maxrecords=10):
         """
