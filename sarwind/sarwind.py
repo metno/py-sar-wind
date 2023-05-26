@@ -193,14 +193,18 @@ class SARWind(Nansat, object):
             self.set_metadata('WIND_DIRECTION_SOURCE', aux_wind.filename)
 
         # Check time difference between SAR image and wind direction object
+        try:
+            wind_time = aux_wind.get_metadata(band_id=eastward_wind_bandNo, key='time_iso_8601')
+        except ValueError:
+            wind_time = aux_wind.get_metadata('time_coverage_start')
         timediff = self.time_coverage_start.replace(tzinfo=None) - \
-            parse(aux_wind.get_metadata('time_coverage_start'))
+            parse(wind_time)
 
         hoursDiff = np.abs(timediff.total_seconds()/3600.)
 
         print('Time difference between SAR image and wind direction: %.2f hours' % hoursDiff)
         print('SAR image time: ' + str(self.time_coverage_start))
-        print('Wind dir time: ' + str(parse(aux_wind.get_metadata('time_coverage_start'))))
+        print('Wind dir time: ' + str(parse(wind_time)))
         if hoursDiff > 3:
             warnings.warn('Time difference exceeds 3 hours!')
             if hoursDiff > 12:
@@ -223,9 +227,8 @@ class SARWind(Nansat, object):
         # 0 degrees meaning wind from North, 90 degrees meaning wind from East
         # Return wind direction, time, wind speed
         wind_dir = np.degrees(np.arctan2(-uu, -vv))
-        time = aux_wind.time_coverage_start
         wind_speed = np.sqrt(np.power(uu, 2) + np.power(vv, 2))
-        return wind_speed, wind_dir, time
+        return wind_speed, wind_dir, wind_time
 
     def _calculate_wind(self):
         """ Calculate wind speed from SAR sigma0 in VV polarization.
@@ -252,9 +255,6 @@ class SARWind(Nansat, object):
                 'dataType': '6'
             })
             s0vv = self[s0hh_band_no]*PR
-
-        fillval = float(self.get_metadata(band_id=self.sigma0_bandNo, key='_FillValue'))
-        s0vv[s0vv == fillval] = np.nan
 
         winddir = self['winddirection']
         look_dir[np.isnan(winddir)] = np.nan
