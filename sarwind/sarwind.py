@@ -3,6 +3,8 @@
              (https://github.com/metno/met-sar-vind/blob/main/LICENSE).
 """
 import warnings
+import pytz
+
 from datetime import datetime
 from dateutil.parser import parse
 
@@ -47,6 +49,9 @@ class SARWind(Nansat, object):
 
         super(SARWind, self).__init__(sar_image, *args, **kwargs)
 
+        self.set_metadata('wind_filename', wind)
+        self.set_metadata('sar_filename', sar_image)
+        
         # If this is a netcdf file with already calculated windspeed
         # do not recalculate wind
         if self.has_band('windspeed'):
@@ -142,7 +147,6 @@ class SARWind(Nansat, object):
                 'eastward_wind',
                 'northward_wind'])
         # Set filename of source wind in metadata
-        self.set_metadata('WIND_DIRECTION_SOURCE', aux_wind_source)
         wspeed, wdir, wdir_time = self._get_wind_direction_array(aux, *args, **kwargs)
 
         return wspeed, wdir, wdir_time
@@ -188,9 +192,6 @@ class SARWind(Nansat, object):
 
         # Then reproject
         aux_wind.reproject(self, resample_alg=resample_alg, tps=True)
-
-        if 'WIND_DIRECTION_SOURCE' not in self.get_metadata().keys():
-            self.set_metadata('WIND_DIRECTION_SOURCE', aux_wind.filename)
 
         # Check time difference between SAR image and wind direction object
         try:
@@ -288,6 +289,17 @@ class SARWind(Nansat, object):
 
         # set winddir_time to global metadata
         self.set_metadata('winddir_time', str(wind_direction_time))
+
+        # Update history
+        history = ""
+        if "history" in self.vrt.dataset.GetMetadata_List():
+            history = self.get_metadata("history")
+        self.set_metadata("history", history + "%s: %s(%s, %s)" % (
+            datetime.now(tz=pytz.UTC).isoformat(),
+            "sarwind.sarwind.SARWind",
+            self.get_metadata('wind_filename'),
+            self.get_metadata('sar_filename'))
+        )
 
     def get_bands_to_export(self, bands):
         if not bands:
