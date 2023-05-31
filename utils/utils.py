@@ -10,7 +10,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
 
-def plot_wind_map(w):
+def plot_wind_map(w, vmin=0, vmax=12):
     land_f = cfeature.NaturalEarthFeature('physical', 'land', '50m', edgecolor='face',
         facecolor='lightgray')
 
