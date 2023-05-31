@@ -4,27 +4,36 @@
 """
 import cmocean
 
+import numpy as np
 import xarray as xr
+
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
 
-def plot_wind_map(w, vmin=0, vmax=12):
+def plot_wind_map(nansat_objects, vmin=0, vmax=20, title=None):
     land_f = cfeature.NaturalEarthFeature('physical', 'land', '50m', edgecolor='face',
         facecolor='lightgray')
 
     # FIG 1
     ax1 = plt.subplot(projection=ccrs.PlateCarree())
-    mlon, mlat = w.get_geolocation_grids()
     ax1.add_feature(land_f)
-    da = xr.DataArray(w['windspeed'], dims=["y", "x"], coords={"lat": (("y", "x"), mlat),
-                      "lon": (("y", "x"), mlon)})
-    da.plot.pcolormesh("lon", "lat", ax=ax1, vmin=vmin, vmax=vmax, cmap=cmocean.cm.balance,
-                       add_colorbar=True)
+    cb = True
+    for w in nansat_objects:
+        mlon, mlat = w.get_geolocation_grids()
+        da = xr.DataArray(np.sqrt(np.square(w['U']) + np.square(w['V'])),
+            dims=["y", "x"], coords={"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
+        da.plot.pcolormesh("lon", "lat", ax=ax1, vmin=vmin, vmax=vmax, cmap=cmocean.cm.balance,
+            add_colorbar=cb)
+        #ds = xr.open_dataset(w.filename)
+        #ds.assign_coords({"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
+        #ds.plot.quiver(x="lon", y="lat", u="U", v="V", ax=ax1)
+        cb = False
     ax1.coastlines()
     ax1.gridlines(draw_labels=True)
-    plt.title('Wind at %s' % m.time_coverage_start.strftime('%Y-%m-%d'))
+    if title is None:
+        plt.title('Wind on %s' % w.time_coverage_start.strftime('%Y-%m-%d'))
 
     # if add_gc:
     #     date = datetime.datetime(

@@ -73,9 +73,8 @@ class SARWind(Nansat, object):
                 'dataType': '6'
             })
 
-        if pixelsize != 0:
-            print('Resizing SAR image to ' + str(pixelsize) + ' m pixel size')
-            self.resize(pixelsize=pixelsize)
+        print('Resizing SAR image to ' + str(pixelsize) + ' m pixel size')
+        self.resize(pixelsize=pixelsize)
 
         if not self.has_band('wind_direction'):
             self.set_aux_wind(wind, resample_alg=resample_alg, **kwargs)
