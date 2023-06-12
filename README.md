@@ -12,11 +12,11 @@ System for SAR wind processing.
 
 ![Landscape diagram](https://github.com/metno/met-sar-vind/blob/main/puml/landscape-diagram.png)
 
-## Context diagram
+## Container diagram
 
 ![Context diagram](https://github.com/metno/met-sar-vind/blob/main/puml/context-diagram.png)
 
-## SAR wind container diagram
+## SAR wind component diagram
 
 ![sarwind-container-diagram](https://github.com/metno/met-sar-vind/blob/main/puml/sarwind-container-diagram.png)
 
