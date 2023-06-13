@@ -1,0 +1,42 @@
+@startuml sarwind-component-diagram
+'!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+!include <C4/C4_Component>
+
+'LAYOUT_TOP_DOWN()
+'LAYOUT_LEFT_RIGHT()
+
+SystemDb_Ext(met_storage, "Temporary data storage", "Lustre file system. 1 month temporary storage as backup to NERSC long-term data storage.")
+
+System_Ext(met, "Metadata Services", "Defines a REST API to create, update, delete, and validate MMD files. Discovery metadata is then stored in SOLR, and available via different API protocols (e.g., OAI-PMH, OGC CSW, opensearch).")
+
+System(broker, "Broker", "Broker system to listen for messages about new SAR datasets and start SAR wind processing chain. Probably only requires the MMD data access field. Implemented in cron/bash/python.")
+
+Container_Boundary(sarwind, "SAR wind"){
+
+  Component(nbs, "Geometric correction", "C", "Geolocation tool for Sentinel-1 from the Norwegian ground segment.")
+  Component(ice, "Get ice mask", "Python", "Tool to get ice mask in order to avoid such pixels.")
+  Component(land, "Get land mask", "Nansat", "Tool to get land mask in order to avoid such pixels.")
+  Component(cmod, "CMOD5n", "Python", "CMOD function to relate NRSC to wind speed. Uses NRCS, incidence angle, and relative wind direction.")
+  Component(hh2vv, "HH2VV function", "Python", "Convert from HH to VV polarization, using PR from Lin Ren, Jingsong Yang, Alexis Mouche, et al. (2017; remote sensing).")
+  Component(nansat, "Nansat software", "Python", "Reads and calibrates SAR data in SAFE format to sigma nought, generates full resolution incidence angles etc. Also reads any NetCDF-CF compliant data, such as Arome-Arctic.")
+  Component(swbroker, "Broker", "Python", "Organizes the wind processing workflow.")
+
+  Component(flagger, "Flagging tool", "Python", "Flags pixels with large deviations from other source wind fields (e.g., models, scatterometers)")
+
+}
+
+Rel(broker, swbroker, "starts SAR wind processing in")
+
+Rel(swbroker, broker, "returns filename to")
+Rel(swbroker, nansat, "opens SAR dataset with")
+Rel(swbroker, nansat, "opens model wind dataset with")
+Rel(swbroker, hh2vv, "convert from HH to VV pol with")
+Rel(swbroker, cmod, "calculate wind speed with")
+
+'Rel(swbroker, nbs, "gets geo-corrected data from (future dev)")
+
+Rel(swbroker, met_storage, "stores result file (NetCDF-CF) in")
+
+'SHOW_LEGEND()
+
+@enduml
