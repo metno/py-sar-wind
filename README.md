@@ -14,11 +14,11 @@ System for SAR wind processing.
 
 ## Context diagram
 
-![Context diagram](https://github.com/metno/met-sar-vind/blob/main/puml/context-diagram.png)
+![Context diagram](https://github.com/metno/met-sar-vind/blob/main/puml/container-diagram.png)
 
 ## SAR wind container diagram
 
-![sarwind-container-diagram](https://github.com/metno/met-sar-vind/blob/main/puml/sarwind-container-diagram.png)
+![sarwind-container-diagram](https://github.com/metno/met-sar-vind/blob/main/puml/sarwind-component-diagram.png)
 
 # Requirements
 
