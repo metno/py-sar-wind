@@ -51,7 +51,7 @@ class SARWind(Nansat, object):
 
         self.set_metadata('wind_filename', wind)
         self.set_metadata('sar_filename', sar_image)
-        
+
         # If this is a netcdf file with already calculated windspeed
         # do not recalculate wind
         if self.has_band('windspeed'):
@@ -133,10 +133,7 @@ class SARWind(Nansat, object):
                 datetime.strftime(self.time_coverage_start, ':%Y%m%d%H%M')
         aux = Nansat(
             aux_wind_source,
-            netcdf_dim={
-                'time': np.datetime64(self.time_coverage_start),
-                'height2': 10,  # height dimension used in AROME arctic datasets
-                'height3': 10},
+            netcdf_dim={'time': np.datetime64(self.time_coverage_start)},
             # CF standard names of desired bands
             bands=[
                 'x_wind_10m',
@@ -157,48 +154,41 @@ class SARWind(Nansat, object):
         if not isinstance(aux_wind, Nansat):
             raise ValueError('Input parameter must be of type Nansat')
 
-        try:
-            eastward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'eastward_wind'})
-        except ValueError:
-            try:
-                x_wind_bandNo = aux_wind.get_band_number({'standard_name': 'x_wind'})
-                y_wind_bandNo = aux_wind.get_band_number({'standard_name': 'y_wind'})
-            except ValueError:
-                x_wind_bandNo = aux_wind.get_band_number({'standard_name': 'x_wind_10m'})
-                y_wind_bandNo = aux_wind.get_band_number({'standard_name': 'y_wind_10m'})
-            # Get azimuth of aux_wind y-axis in radians
-            az = aux_wind.azimuth_y()*np.pi/180
-            # Get x direction wind
-            x_wind = aux_wind[x_wind_bandNo]
-            fvx = float(aux_wind.get_metadata(band_id=x_wind_bandNo, key='_FillValue'))
-            x_wind[x_wind == fvx] = np.nan
-            # Get y direction wind
-            y_wind = aux_wind[y_wind_bandNo]
-            fvy = float(aux_wind.get_metadata(band_id=y_wind_bandNo, key='_FillValue'))
-            y_wind[y_wind == fvy] = np.nan
-
-            # Get east-/westward wind speeds
-            uu = y_wind*np.sin(az) + x_wind*np.cos(az)
-            vv = y_wind*np.cos(az) - x_wind*np.sin(az)
-            # Add bands and override minmax from nersc wkv
-            aux_wind.add_band(array=uu, parameters={'wkv': 'eastward_wind', 'minmax': '-25 25'})
-            aux_wind.add_band(array=vv, parameters={'wkv': 'northward_wind', 'minmax': '-25 25'})
-
         # # Crop wind field to SAR image area of coverage (to avoid issue with
         # # polar stereographic data mentioned in nansat.nansat.Nansat.reproject
         # # comments)
         # aux_wind.crop_lonlat([nlonmin, nlonmax], [nlatmin, nlatmax])
-
-        # Then reproject
+        # Reproject
         aux_wind.reproject(self, resample_alg=resample_alg, tps=True)
 
+        if aux_wind.has_band('eastward_wind') is None:
+            x_wind_bandNo = aux_wind.get_band_number({'standard_name': 'x_wind'})
+            y_wind_bandNo = aux_wind.get_band_number({'standard_name': 'y_wind'})
+            mask = aux_wind['swathmask']
+            # Get azimuth of aux_wind y-axis in radians
+            az = aux_wind.azimuth_y()*np.pi/180
+            az[mask == 0] = np.nan
+            # Get x direction wind
+            x_wind = aux_wind[x_wind_bandNo]
+            fvx = float(aux_wind.get_metadata(band_id=x_wind_bandNo, key='_FillValue'))
+            x_wind[x_wind == fvx] = np.nan
+            x_wind[mask == 0] = np.nan
+            # Get y direction wind
+            y_wind = aux_wind[y_wind_bandNo]
+            fvy = float(aux_wind.get_metadata(band_id=y_wind_bandNo, key='_FillValue'))
+            y_wind[y_wind == fvy] = np.nan
+            y_wind[mask == 0] = np.nan
+
+            # Get east-/westward wind speeds
+            uu = y_wind*np.sin(az) + x_wind*np.cos(az)
+            vv = y_wind*np.cos(az) - x_wind*np.sin(az)
+            #aux_wind.add_band(array=uu, parameters={'wkv': 'eastward_wind', 'minmax': '-25 25'})
+            #aux_wind.add_band(array=vv, parameters={'wkv': 'northward_wind', 'minmax': '-25 25'})
+        
         # Check time difference between SAR image and wind direction object
-        try:
-            wind_time = aux_wind.get_metadata(band_id=eastward_wind_bandNo, key='time_iso_8601')
-        except ValueError:
-            wind_time = aux_wind.get_metadata('time_coverage_start')
+        wind_time = aux_wind.get_metadata('time_coverage_start')
         timediff = self.time_coverage_start.replace(tzinfo=None) - \
-            parse(wind_time)
+            parse(wind_time).replace(tzinfo=None)
 
         hoursDiff = np.abs(timediff.total_seconds()/3600.)
 
@@ -211,19 +201,19 @@ class SARWind(Nansat, object):
                 raise TimeDiffError('Time difference is %.f - impossible to '
                                     'estimate reliable wind field' % hoursDiff)
 
-        # Get band numbers of eastward and northward wind
-        eastward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'eastward_wind'})
-        northward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'northward_wind'})
+        ## Get band numbers of eastward and northward wind
+        #eastward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'eastward_wind'})
+        #northward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'northward_wind'})
 
-        # Get mask, and eastward and northward wind speed components
-        mask = aux_wind['swathmask']
-        uu = aux_wind[eastward_wind_bandNo]
-        uu[mask == 0] = np.nan
-        vv = aux_wind[northward_wind_bandNo]
-        vv[mask == 0] = np.nan
+        ## Get mask, and eastward and northward wind speed components
+        #mask = aux_wind['swathmask']
+        #uu = aux_wind[eastward_wind_bandNo]
+        #uu[mask == 0] = np.nan
+        #vv = aux_wind[northward_wind_bandNo]
+        #vv[mask == 0] = np.nan
 
-        if uu is None:
-            raise Exception('Could not read wind vectors')
+        #if uu is None:
+        #    raise Exception('Could not read wind vectors')
         # 0 degrees meaning wind from North, 90 degrees meaning wind from East
         # Return wind direction, time, wind speed
         wind_dir = np.degrees(np.arctan2(-uu, -vv))
