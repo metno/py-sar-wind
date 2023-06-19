@@ -2,10 +2,14 @@
              met-sar-vind is licensed under the Apache-2.0 license
              (https://github.com/metno/met-sar-vind/blob/main/LICENSE).
 """
+import sys
 from owslib import fes
 from owslib.fes import SortBy, SortProperty
 from owslib.csw import CatalogueServiceWeb
+import xml.etree.ElementTree as ET
 
+from siphon.catalog import TDSCatalog
+from netCDF4 import Dataset
 
 class SARData():
     """
@@ -37,25 +41,26 @@ class SARData():
      kw_names : str
                A search string filter to limit the result of a search.
                Example:
-               >>> kw_name='S1A*'
+               >>> kw_name='S1A_EW_GRDM_1SDH%'
 
     """
 
     def __init__(self, endpoint='https://nbs.csw.met.no/csw', bbox=None, start=None, stop=None,
                  kw_names=None, crs='urn:ogc:def:crs:OGC:1.3:CRS84', *args, **kwargs):
+        super(SARData, self).__init__(*args, **kwargs)
         constraints = []
         csw = None
-        while csw is None:
-            try:
-                # connect
-                csw = self._get_csw_connection(endpoint)
-            except Exception:
-                pass
-
+        try:
+            # connect
+            csw = self._get_csw_connection(endpoint)
+        except Exception as e:
+            print("Exception: %s" % str(e))
+            sys.exit()
+            
         if kw_names:
-            or_filt = self._get_freetxt_search(self, kw_names)
-            constraints.append(or_filt)
-
+            freetxt_filt = self._get_freetxt_search(kw_names)
+            constraints.append(freetxt_filt)
+        
         if all(v is not None for v in [start, stop]):
             begin, end = self._fes_date_filter(start, stop)
             constraints.append(begin)
@@ -75,7 +80,7 @@ class SARData():
 
         for key, value in list(csw.records.items()):
             for ref in value.references:
-                if ref['scheme'] == 'OPENDAP:OPENDAP':
+                if ref['scheme'] == 'OPeNDAP:OPeNDAP':
                     url_opendap.append(ref['url'])
         self.url_opendap = url_opendap
 
@@ -85,14 +90,12 @@ class SARData():
 
     def _get_freetxt_search(self, kw_names):
         """
-        Retuns a CSW search object based on input string(s)
+        Retuns a CSW search object based on input string
         """
-        kw = dict(wildCard="*", escapeChar="\\", singleChar="?", propertyname="apiso:AnyText")
-        or_filt = fes.Or([
-            fes.PropertyIsLike(literal=("*%s*" % val), **kw) for val in kw_names])
-        return or_filt
+        freetxt_filt = fes.PropertyIsLike('csw:AnyText',  literal=('%s' % kw_names), escapeChar='\\', singleChar='_', wildCard='%', matchCase=True)
+        return freetxt_filt
 
-    def _get_csw_records(self, csw, filter_list, pagesize=2, maxrecords=10):
+    def _get_csw_records(self, csw, filter_list, pagesize=10, maxrecords=1000):
         """
         Iterate `maxrecords`/`pagesize` times until the requested value in
         `maxrecords` is reached.
@@ -108,6 +111,7 @@ class SARData():
                 startposition=startposition,
                 maxrecords=pagesize,
                 sortby=sortby,
+                esn='full',
             )
             csw_records.update(csw.records)
             if csw.results["nextrecord"] == 0:
@@ -143,3 +147,19 @@ class SARData():
         else:
             raise NameError("Unrecognized constraint {}".format(constraint))
         return begin, end
+
+    def _get_datasets(satellite, year, month, day):
+        """ Get list of all availible data sets"""
+        catalogUrl = 'http://nbstds.met.no/thredds/catalog/NBS/{}/{}/{}/{}/EW/catalog.xml'.format(satellite, year, month, day)
+        cat = TDSCatalog(catalogUrl)
+        return list(cat.datasets), catalogUrl
+
+    def open_dataset(dataset_name, tdsCatalogUrl):
+        """
+        Open and return a netCDF Dataset object for a given date and image index
+        of Sentinel-2 data from THREDDS nbs server.
+        """
+        cat = TDSCatalog(tdsCatalogUrl)
+        dataset = cat.datasets[dataset_name]
+        ds = Dataset(dataset.access_urls['OPENDAP'])
+        return ds
