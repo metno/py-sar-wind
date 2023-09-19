@@ -2,14 +2,11 @@
              met-sar-vind is licensed under the Apache-2.0 license
              (https://github.com/metno/met-sar-vind/blob/main/LICENSE).
 """
-import sys
 from owslib import fes
-from owslib.fes import SortBy, SortProperty
 from owslib.csw import CatalogueServiceWeb
-import xml.etree.ElementTree as ET
-
 from siphon.catalog import TDSCatalog
 from netCDF4 import Dataset
+
 
 class SARData():
     """
@@ -50,17 +47,17 @@ class SARData():
         super(SARData, self).__init__(*args, **kwargs)
         constraints = []
         csw = None
+
+        # connect to endpoint
         try:
-            # connect
             csw = self._get_csw_connection(endpoint)
         except Exception as e:
             print("Exception: %s" % str(e))
-            sys.exit()
-            
+
         if kw_names:
             freetxt_filt = self._get_freetxt_search(kw_names)
             constraints.append(freetxt_filt)
-        
+
         if all(v is not None for v in [start, stop]):
             begin, end = self._fes_date_filter(start, stop)
             constraints.append(begin)
@@ -74,7 +71,7 @@ class SARData():
         else:
             filter_list = constraints
 
-        self._get_csw_records(csw, filter_list, pagesize=2, maxrecords=10)
+        self._get_csw_records(csw, filter_list, pagesize=10, maxrecords=100)
         self.csw = csw
         url_opendap = []
 
@@ -85,6 +82,8 @@ class SARData():
         self.url_opendap = url_opendap
 
     def _get_csw_connection(self, endpoint):
+        """ Connect to CSW server
+        """
         csw = CatalogueServiceWeb(endpoint, timeout=60)
         return csw
 
@@ -92,16 +91,16 @@ class SARData():
         """
         Retuns a CSW search object based on input string
         """
-        freetxt_filt = fes.PropertyIsLike('csw:AnyText',  literal=('%s' % kw_names), escapeChar='\\', singleChar='_', wildCard='%', matchCase=True)
+        freetxt_filt = fes.PropertyIsLike('csw:AnyText',  literal=('%s' % kw_names),
+                                          escapeChar='\\', singleChar='?',
+                                          wildCard='%', matchCase=True)
         return freetxt_filt
 
-    def _get_csw_records(self, csw, filter_list, pagesize=10, maxrecords=1000):
+    def _get_csw_records(self, csw, filter_list, pagesize=10, maxrecords=100):
         """
         Iterate `maxrecords`/`pagesize` times until the requested value in
         `maxrecords` is reached.
         """
-        # Iterate over sorted results.
-        sortby = SortBy([SortProperty("dc:title", "ASC")])
         csw_records = {}
         startposition = 0
         nextrecord = getattr(csw, "results", 1)
@@ -110,7 +109,7 @@ class SARData():
                 constraints=filter_list,
                 startposition=startposition,
                 maxrecords=pagesize,
-                sortby=sortby,
+                outputschema="http://www.opengis.net/cat/csw/2.0.2",
                 esn='full',
             )
             csw_records.update(csw.records)
@@ -127,7 +126,6 @@ class SARData():
         (begin and end inclusive).
         NOTE: Truncates the minutes!!!
         """
-
         start = start.strftime("%Y-%m-%d %H:00")
         stop = stop.strftime("%Y-%m-%d %H:00")
         if constraint == "overlaps":
@@ -150,7 +148,8 @@ class SARData():
 
     def _get_datasets(satellite, year, month, day):
         """ Get list of all availible data sets"""
-        catalogUrl = 'http://nbstds.met.no/thredds/catalog/NBS/{}/{}/{}/{}/EW/catalog.xml'.format(satellite, year, month, day)
+        catalogUrl = 'http://nbstds.met.no/thredds/catalog/NBS/' \
+            '{}/{}/{}/{}/EW/catalog.xml'.format(satellite, year, month, day)
         cat = TDSCatalog(catalogUrl)
         return list(cat.datasets), catalogUrl
 
