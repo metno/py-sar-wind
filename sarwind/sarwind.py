@@ -4,15 +4,13 @@
 """
 import warnings
 import pytz
-
 from datetime import datetime
 from dateutil.parser import parse
-
 import numpy as np
-
 from nansat.nansat import Nansat
-
 from sarwind.cmod5n import cmod5n_inverse
+from matplotlib import pyplot as plt
+from matplotlib import cm
 
 
 class TimeDiffError(Exception):
@@ -182,9 +180,9 @@ class SARWind(Nansat, object):
             # Get east-/westward wind speeds
             uu = y_wind*np.sin(az) + x_wind*np.cos(az)
             vv = y_wind*np.cos(az) - x_wind*np.sin(az)
-            #aux_wind.add_band(array=uu, parameters={'wkv': 'eastward_wind', 'minmax': '-25 25'})
-            #aux_wind.add_band(array=vv, parameters={'wkv': 'northward_wind', 'minmax': '-25 25'})
-        
+            # aux_wind.add_band(array=uu, parameters={'wkv': 'eastward_wind', 'minmax': '-25 25'})
+            # aux_wind.add_band(array=vv, parameters={'wkv': 'northward_wind', 'minmax': '-25 25'})
+
         # Check time difference between SAR image and wind direction object
         wind_time = aux_wind.get_metadata('time_coverage_start')
         timediff = self.time_coverage_start.replace(tzinfo=None) - \
@@ -201,19 +199,19 @@ class SARWind(Nansat, object):
                 raise TimeDiffError('Time difference is %.f - impossible to '
                                     'estimate reliable wind field' % hoursDiff)
 
-        ## Get band numbers of eastward and northward wind
-        #eastward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'eastward_wind'})
-        #northward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'northward_wind'})
+        # # Get band numbers of eastward and northward wind
+        # eastward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'eastward_wind'})
+        # northward_wind_bandNo = aux_wind.get_band_number({'standard_name': 'northward_wind'})
 
-        ## Get mask, and eastward and northward wind speed components
-        #mask = aux_wind['swathmask']
-        #uu = aux_wind[eastward_wind_bandNo]
-        #uu[mask == 0] = np.nan
-        #vv = aux_wind[northward_wind_bandNo]
-        #vv[mask == 0] = np.nan
+        # # Get mask, and eastward and northward wind speed components
+        # mask = aux_wind['swathmask']
+        # uu = aux_wind[eastward_wind_bandNo]
+        # uu[mask == 0] = np.nan
+        # vv = aux_wind[northward_wind_bandNo]
+        # vv[mask == 0] = np.nan
 
-        #if uu is None:
-        #    raise Exception('Could not read wind vectors')
+        # if uu is None:
+        #     raise Exception('Could not read wind vectors')
         # 0 degrees meaning wind from North, 90 degrees meaning wind from East
         # Return wind direction, time, wind speed
         wind_dir = np.degrees(np.arctan2(-uu, -vv))
@@ -305,3 +303,73 @@ class SARWind(Nansat, object):
         # TODO: add name of original file to metadata
 
         super(SARWind, self).export(bands=self.get_bands_to_export(bands), *args, **kwargs)
+
+    def plot(self, filename=None, numVectorsX=16, show=True,
+             clim=[0, 20], maskWindAbove=35,
+             windspeedBand='windspeed', winddirBand='winddirection',
+             northUp_eastRight=True, landmask=False, icemask=False):
+        try:
+            sar_windspeed = self['windspeed']
+            palette = cm.get_cmap('jet')
+            # sar_windspeed, palette = self._get_masked_windspeed(landmask,
+            # icemask, windspeedBand=windspeedBand)
+        except:
+            raise ValueError('SAR wind has not been calculated,'
+                             'execute calculate_wind(wind_direction) before plotting.')
+        sar_windspeed[sar_windspeed > maskWindAbove] = np.nan
+
+        winddirReductionFactor = int(np.round(self.vrt.dataset.RasterXSize/numVectorsX))
+
+        winddir_relative_up = 360 - self[winddirBand] + self.azimuth_y()
+        indX = range(0, self.vrt.dataset.RasterXSize, winddirReductionFactor)
+        indY = range(0, self.vrt.dataset.RasterYSize, winddirReductionFactor)
+        X, Y = np.meshgrid(indX, indY)
+        try:  # scaling of wind vector length, if model wind is available
+            model_windspeed = self['model_windspeed']
+            model_windspeed = model_windspeed[Y, X]
+        except:
+            model_windspeed = 8*np.ones(X.shape)
+
+        Ux = np.sin(np.radians(winddir_relative_up[Y, X]))*model_windspeed
+        Vx = np.cos(np.radians(winddir_relative_up[Y, X]))*model_windspeed
+        # Make sure North is up, and east is right
+        if northUp_eastRight:
+            lon, lat = self.get_corners()
+            if lat[0] < lat[1]:
+                sar_windspeed = np.flipud(sar_windspeed)
+                Ux = -np.flipud(Ux)
+                Vx = -np.flipud(Vx)
+            if lon[0] > lon[2]:
+                sar_windspeed = np.fliplr(sar_windspeed)
+                Ux = np.fliplr(Ux)
+                Vx = np.fliplr(Vx)
+
+        # Plotting
+        figSize = sar_windspeed.shape
+        legendPixels = 60.0
+        legendPadPixels = 5.0
+        legendFraction = legendPixels/figSize[0]
+        legendPadFraction = legendPadPixels/figSize[0]
+        dpi = 100.0
+
+        fig = plt.figure()
+        fig.set_size_inches((figSize[1]/dpi, (figSize[0]/dpi)*\
+                             (1+legendFraction + legendPadFraction)))
+        ax = fig.add_axes([0, 0, 1, 1+legendFraction])
+        ax.set_axis_off()
+        plt.imshow(sar_windspeed, cmap=palette, interpolation='nearest')
+        plt.clim(clim)
+        cbar = plt.colorbar(orientation='horizontal', shrink=.80,
+                            aspect=40, fraction=legendFraction, pad=legendPadFraction)
+        cbar.ax.set_ylabel('[m/s]', rotation=0)  # could replace m/s by units from metadata
+        cbar.ax.yaxis.set_label_position('right')
+        # TODO: plotting function should be improved to give
+        #       nice results for images of all sized
+        ax.quiver(X, Y, Ux, Vx, angles='xy', width=0.004,
+                  scale=200, scale_units='width',
+                  color=[.0, .0, .0], headaxislength=4)
+        if filename is not None:
+            fig.savefig(filename, pad_inches=0, dpi=dpi)
+        if show:
+            plt.show()
+        return fig
