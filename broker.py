@@ -9,7 +9,10 @@ from winddata.winddata import WINDdata
 import warnings
 import pytz
 import os
+import fnmatch
 from nansat.nansat import Nansat
+import subprocess
+
 os.environ.setdefault('GDAL_ENABLE_DEPRECATED_DRIVER_DODS','YES')
 
 
@@ -48,16 +51,19 @@ class Broker():
                >>> kw_name='Arome-Arctic%'
     """
 
-    def __init__(self, bbox=[-25, 70, 50, 85], start=None, stop=None):
+    def __init__(self, bbox=[-25, 60, 70, 85], start=None, stop=None):
         # Set start and stop value to today if not provided as argument
         if not isinstance(start, datetime) or not isinstance(stop, datetime):
             warnings.warn('Start/stop time not provided. Using current time as default!')
             start = datetime.now().replace(tzinfo=pytz.utc)
             stop = start + timedelta(days=1)
-        print(start, stop)
+        print('\nSearch for new Sentinel-1 data between start: %s stop: %s' % (start.strftime('%Y%m%dT%H'), stop.strftime('%Y%m%dT%H')))
         self.start = start
         self.stop = stop
-        self.outpath = '/home/froded/data/tmp'
+        self.outpath = '/data/sar_wind_products/%04d/%02d/' % (start.year,start.month)
+        if not os.path.exists(self.outpath):
+            os.makedirs(self.outpath)
+
         self.sw_filenames = []
         self.nc_filenames = []
 
@@ -75,25 +81,54 @@ class Broker():
         # print(sar.url_opendap)
 
         if len(sar.url_opendap) == 0:
-            raise Exception('No new SAR data available')
+            raise Exception('No SAR data available for the requested date/time')
 
-        # Get Arome Arctic data and start wind generateion
+        # Get Arome Arctic data and start the wind generateion
         for sarfile in sar.url_opendap:
-            print('Start processing on %s' % sarfile)
-            modelUrl = self._get_arome_file(sarfile, self.bbox)
-            if modelUrl == '':
-                print('No arome data available between matching %s' % (sarfile))
+            # Check if already processed by looking in the output path
+            if (len(self._find_files('%s*' % (os.path.basename(sarfile).split('.')[0]))) > 0):
+                print('Already processed: %s' % sarfile)
+                continue
+            
+            # Looking for model wind data
+            try:
+                modelUrl = self._get_arome_file(sarfile, self.bbox)
+            except Exception as e:
+                print(e)
+                modelUrl = ''
+                print('Not able to find arome data matching %s' % (sarfile))
                 continue
 
             # Start running CMOD wind processing
+            print('Start processing on:')
             print('SAR file: %s' % sarfile)
             print('Model file: %s' % modelUrl)
-            sw = SARWind(sarfile, modelUrl)
-            ncfilename = '%s/%s_wind.nc' % (self.outpath, os.path.basename(sarfile).split('.')[0])
-            sw.export(ncfilename, bands=[22, 23, 24, 25])
-            # sw.plot()
-            self.sw_filenames.append(sarfile)
-            self.nc_filenames.append(ncfilename)
+            try:
+                sw = SARWind(sarfile, modelUrl)
+                ncfilename = '%s/%s_wind.nc' % (self.outpath, os.path.basename(sarfile).split('.')[0])
+                sw.export(ncfilename, bands=[22, 23, 24, 25])
+                # sw.plot()
+                self.sw_filenames.append(sarfile)
+                self.nc_filenames.append(ncfilename)
+                
+                dstpath = '/lustre/storeB/project/fou/fd/project/sar-wind/products/%04d/%02d/%02d' % (self.start.year,self.start.month, self.start.day)
+                cmd = 'ssh -i /home/ubuntu/.ssh/id_rsa \"froded@ppi-clogin-a1.met.no\" \"mkdir -p %s\"' % dstpath
+                print(cmd)
+                subprocess.call(cmd, shell=True)
+
+
+                cmd = 'scp -i /home/ubuntu/.ssh/id_rsa %s froded@ppi-clogin-a1.met.no:%s/' % (ncfilename, dstpath)
+                print(cmd)
+                subprocess.call(cmd, shell=True)
+
+            except:
+                print('Could not generate wind from files')
+                print('SAR file: %s' % sarfile)
+                print('Arome file: %s' % modelUrl) 
+         
+        # TODO: Keep track of processed files. 
+        # For now I am only checking for filename in output netCDF path.
+        # Processed files are available from self.nc_filenames
 
     def _getURL(self, seachStr, url_opendap):
         modelUrl = ''
@@ -112,7 +147,6 @@ class Broker():
         return time_closest
 
     def _get_arome_file(self, sarfile, bbox):
-        print('In _get_arome_file find time from %s' % sarfile)
         nobject = Nansat(sarfile)
         ntime = nobject.time_coverage_end
         hour = self._get_arome_time(ntime.hour)
@@ -145,10 +179,19 @@ class Broker():
             cnt += 1
         return modelUrl
 
+    def _find_files(self, pattern):
+        '''Return list of files matching pattern in self.outpath folder.'''
+        return [n for n in fnmatch.filter(os.listdir(self.outpath), pattern) if
+            os.path.isfile(os.path.join(self.outpath, n))]
+
 
 if __name__ == '__main__':
-    start = datetime(2023, 9, 14, 3, 0, 0).replace(tzinfo=pytz.utc)
-    stop = datetime(2023, 9, 15, 0, 0, 0).replace(tzinfo=pytz.utc)
+    #start = datetime(2023, 10, 6, 0, 0, 0).replace(tzinfo=pytz.utc)
+    #stop = datetime(2023, 10, 7, 0, 0, 0).replace(tzinfo=pytz.utc)
+
+    now  = datetime.now().replace(tzinfo=pytz.utc)
+    start = datetime(now.year, now.month, now.day, 0, 0, 0).replace(tzinfo=pytz.utc)
+    stop = start + timedelta(days=1)
 
     broker_object = Broker(start=start, stop=stop)
     # broker_object.wind.plot()  
