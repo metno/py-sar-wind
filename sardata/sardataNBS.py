@@ -120,7 +120,7 @@ class SARData():
                 break
         csw.records.update(csw_records)
 
-    def _fes_date_filter(self, start, stop, constraint="within"):
+    def _fes_date_filter(self, start, stop, constraint="overlaps"):
         """
         Take datetime-like objects and returns a fes filter for date range
         (begin and end inclusive).
