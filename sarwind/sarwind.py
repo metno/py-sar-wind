@@ -11,7 +11,9 @@ from nansat.nansat import Nansat
 from sarwind.cmod5n import cmod5n_inverse
 from matplotlib import pyplot as plt
 from matplotlib import cm
-
+import logging
+import uuid
+import netCDF4
 
 class TimeDiffError(Exception):
     pass
@@ -46,7 +48,9 @@ class SARWind(Nansat, object):
             raise ValueError('Input parameter for SAR and wind direction must be of type string')
 
         super(SARWind, self).__init__(sar_image, *args, **kwargs)
-
+        
+        print(wind)
+        print(sar_image)
         self.set_metadata('wind_filename', wind)
         self.set_metadata('sar_filename', sar_image)
 
@@ -283,19 +287,18 @@ class SARWind(Nansat, object):
             history = self.get_metadata("history")
         self.set_metadata("history", history + "%s: %s(%s, %s)" % (
             datetime.now(tz=pytz.UTC).isoformat(),
-            "sarwind.sarwind.SARWind",
+            "SARWind",
             self.get_metadata('wind_filename'),
             self.get_metadata('sar_filename'))
         )
 
     def get_bands_to_export(self, bands):
         if not bands:
-            bands = [
-                self.get_band_number('valid'),
-                self.get_band_number('winddirection'),
-                self.get_band_number('windspeed'),
-                self.get_band_number('model_windspeed'),
-            ]
+            bands = [self.get_band_number('winddirection'),
+                     self.get_band_number('windspeed'),
+                     self.get_band_number('model_windspeed'),
+                     self.get_band_number('U'),
+                     self.get_band_number('V'),]
         return bands
 
     def export(self, *args, **kwargs):
@@ -373,3 +376,134 @@ class SARWind(Nansat, object):
         if show:
             plt.show()
         return fig
+
+
+    def export2netcdf(self, history_message='', filename='', bands=None):
+        
+        if not filename:
+                raise ValueError('Please provide a netcdf filename!')
+        
+        fn = filename
+        log_message = 'Exporting merged subswaths to %s' % fn
+            
+        date_created = datetime.now(tz=pytz.UTC)
+        
+        # Get metadata
+        metadata = self.get_metadata()
+                
+        # Updata history
+        try:
+            history = metadata['history']
+        except ValueError:
+            history = ''
+        history = ''
+        if not history_message:
+            history_message = '%s: %s, SARWind.export2netcdf(%s)' % \
+                (datetime.now(tz=pytz.UTC).isoformat(), history,filename.split('/')[-1])
+        else:
+            history_message = '%s: %s, %s' % \
+                (datetime.now(tz=pytz.UTC).isoformat(), history, history_message)
+        
+        metadata['history'] = history_message
+              
+        # Get and set dataset id
+        if 'id' not in metadata.keys():
+            metadata['id'] = str(uuid.uuid4())
+        
+        # Set global metadata
+        sar_filename = metadata['sar_filename'].split('/')[-1]
+        metadata['title'] = 'Surface wind derived from %s' % sar_filename
+        metadata['title_no'] = 'Overflate vind utledet fra %s' % sar_filename
+        metadata['creator_role'] = 'Technical contact'  
+        metadata['creator_type'] = 'person' 
+        metadata['creator_name'] = 'Morten Wergeland Hansen'
+        metadata['creator_email'] = 'mortenwh@met.no' 
+        metadata['creator_institution'] = 'Norwegian Meteorological Institute (MET Norway)'
+        metadata['contributor_name'] = 'Frode Dinessen' 
+        metadata['contributor_role'] = 'Metadata author' 
+        metadata['contributor_email'] = 'froded@met.no'
+        metadata['contributor_institution'] = 'Norwegian Meteorological Institute (MET Norway)'
+        metadata['project'] = 'MET Norway core services (METNCS)'
+        metadata['institution'] = 'Norwegian Meteorological Institute (MET NOrway)'
+        metadata['publisher_type'] = 'institution'
+        metadata['publisher_name'] = 'Norwegian Meteorological Institute'
+        metadata['publisher_url'] = 'https://www.met.no/'
+        metadata['publisher_email'] = 'csw-services@met.no'
+    
+        metadata['references'] = 'https://www.researchgate.net/publication/288260682_CMOD5_An_improved_geophysical_model_function_for_ERS_C-band_scatterometry (Scientific publication)'
+        metadata['doi'] = '10.1029/2006JC003743'
+        metadata['dataset_production_status'] = 'Complete'
+        metadata['summary'] = 'Derived wind information based on the SENTINEL-1 C-band synthetic aperture radar mission'
+        metadata['summary_no'] = 'Beregnet vindstyrkt og vindretning utledet fra SENTINEL-1 C-band Synthetic Aperture Radar (SAR) mission'
+        metadata['platform'] = 'Sentinel-1%s' % sar_filename[2]
+        metadata['platform_vocabulary'] = 'https://vocab.met.no/mmd/Platform/Sentinel-1A'
+        metadata['instrument'] = 'SAR-C'
+        metadata['instrument_vocabulary'] = 'https://vocab.met.no/mmd/Instrument/SAR-C'
+        metadata['Conventions'] = 'CF-1.10,ACDD-1.3'
+        metadata['keywords'] = 'GCMDSK:Earth Science > Oceans > RADAR backscatter > Wind'
+        metadata['keywords'] = 'GCMDSK:Earth Science > Oceans > RADAR backscatter > Wind, GCMDSK:Earth Science > Spectral/Engineering > RADAR > RADAR imagery,' \
+            'GCMDLOC:Geographic Region > Northern Hemisphere, GCMDLOC:Vertical Location > Sea Surface, '  \
+            'GCMDPROV: Government Agencies-non-US > Norway > NO/MET > Norwegian Meteorological Institute'
+        metadata['keywords_vocabulary'] = 'GCMDSK:GCMD Science Keywords:https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords,' \
+            'GCMDPROV:GCMD Providers:https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/providers,' \
+            'GCMDLOC:GCMD Locations:https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/locations'
+        
+        
+        # Get image boundary
+        lon,lat= self.get_border()
+        boundary = 'POLYGON (('
+        for la, lo in list(zip(lat,lon)):
+            boundary += '%.2f %.2f, '%(la,lo)
+        boundary = boundary[:-2]+'))'
+        # Set bounds as (lat,lon) following ACDD convention and EPSG:4326
+        metadata['geospatial_bounds'] = boundary
+        metadata['geospatial_bounds_crs'] = 'EPSG:4326'
+    
+        metadata['sar_wind_resource'] = \
+            "https://github.com/metno/met-sar-vind"
+    
+        # Set metadata from dict
+        for key, val in metadata.items():
+            self.set_metadata(key=key, value=val)
+        
+        # If all_bands=True, everything is exported. This is
+        # useful when not all the bands in the list above have
+        # been created
+        if not bands:
+            # Bands to be exported            
+            bands = [self.get_band_number("model_windspeed"),
+                     self.get_band_number("windspeed"),
+                     self.get_band_number("U"),
+                     self.get_band_number("V")
+                     ]
+
+        # Export data to netcdf
+        logging.debug(log_message)
+        self.export(filename=fn, bands=bands)
+    
+            # # Nansat has filename metadata, which is wrong, and adds GCPs as variables.
+            # # Just remove everything.
+            # nc = netCDF4.Dataset(fn, 'a')
+            # if 'filename' in nc.ncattrs():
+            #     nc.delncattr('filename')
+            #     tmp = nc.variables.pop("GCPX")
+            #     tmp = nc.variables.pop("GCPY")
+            #     tmp = nc.variables.pop("GCPZ")
+            #     tmp = nc.variables.pop("GCPPixel")
+            #     tmp = nc.variables.pop("GCPLine")
+            # nc.close()
+    
+            # # Add netcdf uri to DatasetURIs
+            # ncuri = 'file://localhost' + fn
+    
+            # locked = True
+            # while locked:
+            #     try:
+            #         new_uri, created = DatasetURI.objects.get_or_create(uri=ncuri, dataset=ds)
+            #     except OperationalError as oe:
+            #         locked = True
+            #     else:
+            #         locked = False
+            # connection.close()
+    
+            # return new_uri, created
