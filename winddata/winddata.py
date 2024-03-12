@@ -106,13 +106,7 @@ class WINDdata():
         startposition = 0
         nextrecord = getattr(csw, "results", 1)
         while nextrecord != 0:
-            csw.getrecords2(
-                constraints=filter_list,
-                startposition=startposition,
-                maxrecords=pagesize,
-                outputschema="http://www.opengis.net/cat/csw/2.0.2",
-                esn='full',
-            )
+            csw.getrecords2(constraints=filter_list, startposition=startposition, maxrecords=pagesize, outputschema="http://www.opengis.net/cat/csw/2.0.2", esn='full',)
             csw_records.update(csw.records)
             if csw.results["nextrecord"] == 0:
                 break
