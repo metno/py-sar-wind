@@ -15,7 +15,7 @@ class WINDdata():
      Parameters
      -----------
      endpoint : str
-               URL to Data. Default: https://csw.s-enda-dev.k8s.met.no/csw
+               URL to Data. Default: https://csw.s-enda.k8s.met.no/csw
 
      bbox     : int list
                A boudary box for search area speified in latitude and longitude
@@ -41,7 +41,7 @@ class WINDdata():
                >>> kw_name='Arome-Arctic%'
     """
 
-    def __init__(self, endpoint='https://csw.s-enda-dev.k8s.met.no/csw',
+    def __init__(self, endpoint='https://csw.s-enda.k8s.met.no/csw',
                  bbox=None, start=None, stop=None,
                  kw_names='Arome-Arctic%', crs='urn:ogc:def:crs:OGC:1.3:CRS84', *args, **kwargs):
         super(WINDdata, self).__init__(*args, **kwargs)
