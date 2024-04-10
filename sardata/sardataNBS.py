@@ -4,7 +4,6 @@
 """
 from owslib import fes
 from owslib.csw import CatalogueServiceWeb
-from netCDF4 import Dataset
 
 
 class SARData():

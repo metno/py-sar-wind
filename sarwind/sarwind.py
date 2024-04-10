@@ -450,8 +450,7 @@ class SARWind(Nansat, object):
         dpi = 100.0
 
         fig = plt.figure()
-        fig.set_size_inches((figSize[1]/dpi, (figSize[0]/dpi)* \
-                             (1 + legendFraction + legendPadFraction)))
+        fig.set_size_inches(figSize[1]/dpi, (figSize[0]/dpi)*(1+legendFraction+legendPadFraction))
         ax = fig.add_axes([0, 0, 1, 1+legendFraction])
         ax.set_axis_off()
         plt.imshow(sar_windspeed, cmap=palette, interpolation='nearest')
