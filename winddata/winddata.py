@@ -2,10 +2,8 @@
              met-sar-vind is licensed under the Apache-2.0 license
              (https://github.com/metno/met-sar-vind/blob/main/LICENSE).
 """
-import sys
 from owslib import fes
 from owslib.csw import CatalogueServiceWeb
-from siphon.catalog import TDSCatalog
 
 
 class WINDdata():
@@ -106,7 +104,9 @@ class WINDdata():
         startposition = 0
         nextrecord = getattr(csw, "results", 1)
         while nextrecord != 0:
-            csw.getrecords2(constraints=filter_list, startposition=startposition, maxrecords=pagesize, outputschema="http://www.opengis.net/cat/csw/2.0.2", esn='full',)
+            csw.getrecords2(constraints=filter_list, startposition=startposition,
+                            maxrecords=pagesize,
+                            outputschema="http://www.opengis.net/cat/csw/2.0.2", esn='full',)
             csw_records.update(csw.records)
             if csw.results["nextrecord"] == 0:
                 break
@@ -150,17 +150,3 @@ class WINDdata():
         else:
             time_closest = '%02d' % (hour - hour%3)
         return time_closest
-
-    def _get_aromeURL(self, year, month, day, hour):
-        catalogUrl = 'https://thredds.met.no/thredds/catalog/aromearcticarchive/' \
-            '{}/{}/{}/catalog.html'.format(year, month, day)
-        cat = TDSCatalog(catalogUrl)
-        aromeURL = ''
-        hour = self._get_arome_time(hour)  # Find closest mode in time 00,03, 06, 09, ...
-        aromeFile = 'arome_arctic_det_2_5km_{}{}{}T{}Z.nc'.format(year, month,
-                                                                  day, hour)
-        for dataset_name in list(cat.datasets):
-            if dataset_name == aromeFile:
-                dataset = cat.datasets[dataset_name]
-                aromeURL = dataset.access_urls['OPENDAP']
-        return aromeURL
