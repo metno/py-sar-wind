@@ -219,12 +219,12 @@ class Broker():
 
 
 if __name__ == '__main__':
-    start = datetime(2024, 3, 8, 0, 0, 0).replace(tzinfo=pytz.utc)
-    stop = datetime(2024, 3, 8, 23, 0, 0).replace(tzinfo=pytz.utc)
+    #start = datetime(2024, 3, 8, 0, 0, 0).replace(tzinfo=pytz.utc)
+    #stop = datetime(2024, 3, 8, 23, 0, 0).replace(tzinfo=pytz.utc)
 
     now  = datetime.now().replace(tzinfo=pytz.utc)
-    #start = datetime(now.year, now.month, now.day, 0, 0, 0).replace(tzinfo=pytz.utc)
-    #stop = datetime(now.year, now.month, now.day, 23, 0, 0).replace(tzinfo=pytz.utc)
+    start = datetime(now.year, now.month, now.day, 0, 0, 0).replace(tzinfo=pytz.utc)
+    stop = datetime(now.year, now.month, now.day, 23, 0, 0).replace(tzinfo=pytz.utc)
     #stop = start + timedelta(days=0)
 
     broker_object = Broker(start=start, stop=stop)
