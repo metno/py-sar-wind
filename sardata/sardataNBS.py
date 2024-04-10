@@ -4,7 +4,6 @@
 """
 from owslib import fes
 from owslib.csw import CatalogueServiceWeb
-from siphon.catalog import TDSCatalog
 from netCDF4 import Dataset
 
 
@@ -145,20 +144,3 @@ class SARData():
         else:
             raise NameError("Unrecognized constraint {}".format(constraint))
         return begin, end
-
-    def _get_datasets(satellite, year, month, day):
-        """ Get list of all availible data sets"""
-        catalogUrl = 'http://nbstds.met.no/thredds/catalog/NBS/' \
-            '{}/{}/{}/{}/EW/catalog.xml'.format(satellite, year, month, day)
-        cat = TDSCatalog(catalogUrl)
-        return list(cat.datasets), catalogUrl
-
-    def open_dataset(dataset_name, tdsCatalogUrl):
-        """
-        Open and return a netCDF Dataset object for a given date and image index
-        of Sentinel-2 data from THREDDS nbs server.
-        """
-        cat = TDSCatalog(tdsCatalogUrl)
-        dataset = cat.datasets[dataset_name]
-        ds = Dataset(dataset.access_urls['OPENDAP'])
-        return ds
