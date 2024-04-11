@@ -270,10 +270,9 @@ class SARWind(Nansat, object):
         # TODO: Replace U and V bands with pixelfunctions
         u = -windspeed*np.sin((180.0 - self['winddirection'])*np.pi/180.0)
         v = windspeed*np.cos((180.0 - self['winddirection'])*np.pi/180.0)
-        self.add_band(array=u, parameters={
-                            'wkv': 'eastward_wind',
-                            'time': wind_direction_time,
-        })
+        self.add_band(array=u, parameters={'wkv': 'eastward_wind',
+                                           'time': wind_direction_time,}
+                      )
         self.add_band(array=v, parameters={'wkv': 'northward_wind', 'time': wind_direction_time})
 
         # set winddir_time to global metadata

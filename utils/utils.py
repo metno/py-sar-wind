@@ -24,7 +24,7 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
     cb = True
     mlon, mlat = w.get_geolocation_grids()
     da = xr.DataArray(np.sqrt(np.square(w['U']) + np.square(w['V'])),
-                      dims=["y", "x"], 
+                      dims=["y", "x"],
                       coords={"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
     da.plot.pcolormesh("lon", "lat", ax=ax1, vmin=vmin, vmax=vmax, cmap=cmocean.cm.balance,
                        add_colorbar=cb)
