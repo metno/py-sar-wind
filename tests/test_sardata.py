@@ -21,8 +21,8 @@ def testSARData_input_parameter():
     stop = datetime.datetime(2022, 1, 8, 5, 30, 59).replace(tzinfo=pytz.utc)
     start = stop - datetime.timedelta(days=1)
     begin, end = SARData._fes_date_filter([], start, stop)
-    assert type(begin) == fes.PropertyIsGreaterThanOrEqualTo
-    assert type(end) == fes.PropertyIsLessThanOrEqualTo
+    assert type(begin) == fes.PropertyIsLessThanOrEqualTo
+    assert type(end) == fes.PropertyIsGreaterThanOrEqualTo
 
     """ Restricting search from boundering box """
     bbox = [-10, 75, 40, 85]
@@ -46,14 +46,14 @@ def testSARData_from_NBS(mock_csw, mock_get_csw_records):
 
     myrec_val = Myval_class
     myrec_val.references = [{'scheme': 'OPeNDAP:OPeNDAP',
-                             'url': 'https://nbstds.met.no/thredds/dodsC/NBS/S2B/2022/02/08/'\
+                             'url': 'https://nbstds.met.no/thredds/dodsC/NBS/S2B/2022/02/08/'
                              'S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'},
                             {'scheme': 'OGC:WMS',
-                             'url': 'https://nbswms.met.no/thredds/wms_ql/NBS/S2B/2022/02/08/'\
-                             'S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc\
-                             ?SERVICE=WMS&REQUEST=GetCapabilities'},
+                             'url': 'https://nbswms.met.no/thredds/wms_ql/NBS/S2B/2022/02/08/'
+                             'S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'
+                             '?SERVICE=WMS&REQUEST=GetCapabilities'},
                             {'scheme': 'download',
-                             'url': 'https://nbstds.met.no/thredds/fileServer/NBS/S2B/2022/02/08/'\
+                             'url': 'https://nbstds.met.no/thredds/fileServer/NBS/S2B/2022/02/08/'
                              'S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'},
                             {'scheme': None,
                              'url': "https://colhub.met.no/odata/v1/Products('\
@@ -63,8 +63,8 @@ def testSARData_from_NBS(mock_csw, mock_get_csw_records):
 
     mock_csw.return_value = mycsw()
     mock_get_csw_records.return_value = mycsw()
+    
     for (key, val) in list(mycsw.records.items()):
         sw = SARData()
-        print(sw.url_opendap[0])
         assert sw.url_opendap[0] == 'https://nbstds.met.no/thredds/dodsC/NBS/S2B/2022/02/08/'\
-                'S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'
+            'S2B_MSIL1C_20220208T103109_N0400_R108_T34WEB_20220208T125524.nc'
