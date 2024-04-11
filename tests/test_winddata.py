@@ -15,7 +15,7 @@ def testWINDdata_input_parameter():
     """ Freetext search """
     kw_names = 'Arome-Arctic%'
     or_filt = WINDdata._get_freetxt_search([], kw_names)
-    assert type(or_filt) == fes.PropertyIsLike
+    assert isinstance(or_filt, fes.PropertyIsLike)
 
     """ Restricting search from start,stop time """
     stop = datetime.datetime(2023, 4, 17, 0, 00, 00).replace(tzinfo=pytz.utc)
