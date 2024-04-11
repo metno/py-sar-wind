@@ -15,20 +15,20 @@ def testSARData_input_parameter():
     """ Freetext search """
     kw_names = 'S1A%'
     or_filt = SARData._get_freetxt_search([], kw_names)
-    assert type(or_filt) == fes.PropertyIsLike
+    assert isinstance(or_filt, fes.PropertyIsLike)
 
     """ Restricting search from start,stop time """
     stop = datetime.datetime(2022, 1, 8, 5, 30, 59).replace(tzinfo=pytz.utc)
     start = stop - datetime.timedelta(days=1)
     begin, end = SARData._fes_date_filter([], start, stop)
-    assert type(begin) == fes.PropertyIsLessThanOrEqualTo
-    assert type(end) == fes.PropertyIsGreaterThanOrEqualTo
+    assert isinstance(begin, fes.PropertyIsLessThanOrEqualTo)
+    assert isinstance(end, fes.PropertyIsGreaterThanOrEqualTo)
 
     """ Restricting search from boundering box """
     bbox = [-10, 75, 40, 85]
     crs = 'urn:ogc:def:crs:OGC:1.3:CRS84'
     bbox_crs = fes.BBox(bbox, crs=crs)
-    assert type(bbox_crs) == fes.BBox
+    assert isinstance(bbox_crs, fes.BBox)
 
 
 @pytest.mark.sardata
@@ -63,7 +63,7 @@ def testSARData_from_NBS(mock_csw, mock_get_csw_records):
 
     mock_csw.return_value = mycsw()
     mock_get_csw_records.return_value = mycsw()
-    
+
     for (key, val) in list(mycsw.records.items()):
         sw = SARData()
         assert sw.url_opendap[0] == 'https://nbstds.met.no/thredds/dodsC/NBS/S2B/2022/02/08/'\
