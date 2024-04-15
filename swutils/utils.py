@@ -25,11 +25,18 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
     mlon, mlat = w.get_geolocation_grids()
     da = xr.DataArray(np.sqrt(np.square(w['U']) + np.square(w['V'])),
         dims=["y", "x"], coords={"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
-    da.plot.pcolormesh("lon", "lat", ax=ax1, vmin=vmin, vmax=vmax, cmap=cmocean.cm.balance,
+    dp = 15
+    du = xr.DataArray(w['U'][::dp,::dp], dims=["y", "x"],
+        coords={"lat": (("y", "x"), mlat[::dp,::dp]), "lon": (("y", "x"), mlon[::dp,::dp])})
+    dv = xr.DataArray(w['V'][::dp,::dp], dims=["y", "x"],
+        coords={"lat": (("y", "x"), mlat[::dp,::dp]), "lon": (("y", "x"), mlon[::dp,::dp])})
+    ds = xr.Dataset({"du": du, "dv": dv})
+
+    da.plot.pcolormesh("lon", "lat", ax=ax1, vmin=vmin, vmax=vmax, cmap=cmocean.cm.speed,
         add_colorbar=cb)
     #ds = xr.open_dataset(w.filename)
     #ds.assign_coords({"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
-    #ds.plot.quiver(x="lon", y="lat", u="U", v="V", ax=ax1)
+    ds.plot.quiver(x="lon", y="lat", u="du", v="dv", ax=ax1, angles="xy", headwidth=2, width=0.001)
     cb = False
     ax1.coastlines()
     ax1.gridlines(draw_labels=True)
