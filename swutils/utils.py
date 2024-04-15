@@ -23,12 +23,23 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
     ax1.add_feature(land_f)
     cb = True
     mlon, mlat = w.get_geolocation_grids()
-    da = xr.DataArray(np.sqrt(np.square(w['U']) + np.square(w['V'])),
-        dims=["y", "x"], coords={"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
+
+    dir_from_band_no = w.get_band_number({"standard_name": "wind_from_direction"})
+    wind_from = w[dir_from_band_no]
+
+    speed_band_no = w.get_band_number({"standard_name": "wind_speed"})
+    wspeed = w[speed_band_no]
+
+    uu = - wspeed * np.sin(wind_from * np.pi / 180.0)
+    vv = - wspeed * np.cos(wind_from * np.pi / 180.0)
+
+
+    da = xr.DataArray(wspeed, dims=["y", "x"],
+                      coords={"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
     dp = 15
-    du = xr.DataArray(w['U'][::dp,::dp], dims=["y", "x"],
+    du = xr.DataArray(uu[::dp,::dp], dims=["y", "x"],
         coords={"lat": (("y", "x"), mlat[::dp,::dp]), "lon": (("y", "x"), mlon[::dp,::dp])})
-    dv = xr.DataArray(w['V'][::dp,::dp], dims=["y", "x"],
+    dv = xr.DataArray(vv[::dp,::dp], dims=["y", "x"],
         coords={"lat": (("y", "x"), mlat[::dp,::dp]), "lon": (("y", "x"), mlon[::dp,::dp])})
     ds = xr.Dataset({"du": du, "dv": dv})
 
@@ -38,7 +49,8 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
     #ds.assign_coords({"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
     ds.plot.quiver(x="lon", y="lat", u="du", v="dv", ax=ax1, angles="xy", headwidth=2, width=0.001)
     cb = False
-    ax1.coastlines()
+    ax1.add_feature(cfeature.LAND, zorder=100, edgecolor='k')
+    #ax1.coastlines()
     ax1.gridlines(draw_labels=True)
     if title is None:
         plt.title('Wind on %s' % w.time_coverage_start.strftime('%Y-%m-%d'))

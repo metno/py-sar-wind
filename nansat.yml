@@ -130,7 +130,6 @@ dependencies:
   - parallel=20211022=ha770c72_0
   - paramiko=2.8.0=pyhd8ed1ab_0
   - parmap=1.5.3=pyhd8ed1ab_0
-  - parso=0.8.2=pyhd8ed1ab_0
   - partd=1.2.0=pyhd8ed1ab_0
   - pathspec=0.10.3=pyhd8ed1ab_0
   - pcre=8.45=h9c3ff4c_0
@@ -272,3 +271,8 @@ dependencies:
   - zipp=3.6.0=pyhd8ed1ab_0
   - zlib=1.2.11=h36c2ea0_1013
   - zstd=1.4.9=ha95c52a_0
+  - pip:
+    - xdg
+    - pytest
+    - pytest-cov
+    - ipdb
