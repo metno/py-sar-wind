@@ -91,7 +91,7 @@ def meps(filesDir):
 
 @pytest.fixture(scope="session")
 def arome(filesDir):
-    filename = "arome_arctic_vtk_20210324T03Z_nansat05.nc"
+    filename = "arome_arctic_vtk_20210324T03Z_nansat.nc"
     return os.path.join(filesDir, filename)
 
 

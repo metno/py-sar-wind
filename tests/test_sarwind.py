@@ -1,68 +1,98 @@
+import os
 import pytest
-import datetime
+import tempfile
+
 import numpy as np
+
+from nansat.nansat import Nansat
 from sarwind.sarwind import SARWind
 
 
-@pytest.mark.unittests
 @pytest.mark.sarwind
-def testSARWind__set_aux_wind(monkeypatch):
-    """ Test that SARWind.set_aux_wind calls functions
-    _get_aux_wind_from_str and Nansat.add_band.
+def testSARWind_init(monkeypatch):
+    """ Test init
     """
-    mock1_called = 0
-
-    def mock1(*a):
-        nonlocal mock1_called
-        mock1_called += 1
-        speed = np.array([12, 10])
-        dir = np.array([20, 21])
-        time = datetime.datetime(2021, 3, 24, 3, 0)
-        return speed, dir, time
-
-    mock2_called = 0
-
-    def mock2(*a, **kw):
-        nonlocal mock2_called
-        mock2_called += 1
+    with pytest.raises(ValueError) as ee:
+        SARWind(1, 2)
+    assert str(ee.value) == ("Input parameter for SAR and wind "
+                             "direction must be of type string")
 
     with monkeypatch.context() as mp:
-        mp.setattr(SARWind, "_get_aux_wind_from_str", mock1)
-        mp.setattr(SARWind, "add_band", mock2)
-        mp.setattr(SARWind, "__init__", lambda *a: None)
-
-        n = SARWind()
-        # Check that it works with expected input
-        assert n.set_aux_wind('path/to/wind_field_file.nc') is None
-        # Check that the mock for _get_aux_wind_from_str is called once
-        assert mock1_called == 1
-        # Check that the mock for add_band is called twice
-        assert mock2_called == 2
-
-        # Check that TypeError is raised if input is of wrong type
-        with pytest.raises(TypeError) as e:
-            n.set_aux_wind(1)
-
-        assert str(e.value) == "wind must be of type string"
+        mp.setattr(Nansat, "__init__", lambda *a, **k: None)
+        mp.setattr(Nansat, "set_metadata", lambda *args, **kwargs: 1)
+        mp.setattr(Nansat, "has_band", lambda *args, **kwargs: True)
+        with pytest.raises(Exception) as ee:
+            SARWind("sar.nc", "model.nc")
+        assert str(ee.value) == "Wind speed already calculated"
 
 
-@pytest.mark.nbs
 @pytest.mark.sarwind
 def testSARWind_using_s1EWnc_arome_filenames(sarEW_NBS, arome):
     """ Test that wind is generated from Sentinel-1 data in EW-mode,
     HH-polarization and NBS netCDF file with wind direction from the
-    Arome Arctic model.
+    Arome Arctic model. We do not need to test SAFE files, as that is
+    a Nansat issue.
+
+    S1A_EW_GRDM_1SDH_20210324T035507_20210324T035612_037135_045F42_5B4C.NBS.nc
+    arome_arctic_vtk_20210324T03Z_nansat05.nc
     """
-    w = SARWind(sarEW_NBS, arome)
-    assert isinstance(w) == SARWind
+    with pytest.raises(ValueError) as ee:
+        SARWind(sarEW_NBS, arome)
+    assert str(ee.value) == ("Failing reprojection - make sure the "
+                             "datasets overlap in the geospatial domain.")
 
 
-@pytest.mark.safe
 @pytest.mark.sarwind
-def testSARWind_using_s1IWDVsafe_meps_filenames(sarIW_SAFE, arome):
+def testSARWind_get_model_wind_field(arome):
+    """
+    """
+    aux = Nansat(arome)
+    speed, dir = SARWind.get_model_wind_field(aux)
+    assert not np.isnan(speed).all()
+    assert not np.isnan(dir).all()
+
+
+@pytest.mark.sarwind
+def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
+    """ Test the export function
+    """
+    w = SARWind(sarIW_SAFE, meps)
+    # No args
+    w.export()
+    fn = "S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A_wind.nc"
+    assert os.path.isfile(fn)
+    os.remove(fn)
+    # Provide filename
+    with tempfile.NamedTemporaryFile(delete=True) as fp:
+        w.export(filename=fp.name)
+        assert os.path.isfile(fp.name)
+    assert not os.path.isfile(fp.name)
+    # Provide bands
+    bands = ["x_wind_10m"]
+    with tempfile.NamedTemporaryFile(delete=True) as fp:
+        w.export(filename=fp.name, bands=bands)
+        assert os.path.isfile(fp.name)
+    assert not os.path.isfile(fp.name)
+
+
+@pytest.mark.sarwind
+def testSARWind_using_s1IWDV_meps_filenames(sarIW_SAFE, meps):
     """ Test that wind is generated from Sentinel-1 data in IW-mode,
     VV-polarization and SAFE based netcdf file, with wind direction
     from MEPS model.
     """
-    w = SARWind(sarIW_SAFE, arome)
-    assert isinstance(w) == SARWind
+    w = SARWind(sarIW_SAFE, meps)
+    assert isinstance(w, SARWind)
+
+
+@pytest.mark.sarwind
+def testSARWind_calculate_wind_from_direction():
+    """ Test that the wind direction becomes correct.
+    """
+    speed = 4
+    dir0 = 30
+    u = -2
+    v = -2*np.sqrt(3)
+    assert np.round(np.sqrt(np.square(u) + np.square(v)), decimals=2) == speed
+    dir = SARWind.calculate_wind_from_direction(u, v)
+    assert np.round(dir, decimals=2) == dir0
