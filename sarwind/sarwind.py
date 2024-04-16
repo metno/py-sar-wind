@@ -3,18 +3,18 @@
              (https://github.com/metno/met-sar-vind/blob/main/LICENSE).
 """
 import os
-import warnings
-import logging
 import pytz
-from datetime import datetime
-from dateutil.parser import parse
-import numpy as np
-from nansat.nansat import Nansat
-from sarwind.cmod5n import cmod5n_inverse
-from matplotlib import pyplot as plt
-from matplotlib import cm
 import uuid
 import netCDF4
+import logging
+
+import numpy as np
+
+from datetime import datetime
+
+from nansat.nansat import Nansat
+
+from sarwind.cmod5n import cmod5n_inverse
 
 
 class TimeDiffError(Exception):
@@ -28,20 +28,14 @@ class SARWind(Nansat, object):
     Parameters
     -----------
     sar_image : string
-                The SAR image as a filename
+        The SAR image as a filename
     wind : string
-                Filename of wind field dataset. This must be possible to open with Nansat.
+        Filename of wind field dataset. This must be possible to open with Nansat.
     pixelsize : float or int
-                Grid pixel size in metres (0 for full resolution)
+        Grid pixel size in metres (0 for full resolution).
     resample_alg : int
-                Resampling algorithm used for reprojecting wind field
-                to SAR image
-                    -1 : Average,
-                     0 : NearestNeighbour
-                     1 : Bilinear (default),
-                     2 : Cubic,
-                     3 : CubicSpline,
-                     4 : Lancoz
+        Resampling algorithm used for reprojecting the wind field to
+        the SAR image. See nansat.nansat.reproject.
     """
 
     def __init__(self, sar_image, wind, pixelsize=500, resample_alg=1, *args, **kwargs):
@@ -94,7 +88,7 @@ class SARWind(Nansat, object):
             s0vv = self[s0hh_band_no]*PR
 
         # Read and reproject model wind field
-        aux = Nansat(wind, netcdf_dim = {"time": np.datetime64(self.time_coverage_start)})
+        aux = Nansat(wind, netcdf_dim={"time": np.datetime64(self.time_coverage_start)})
         aux.reproject(self, resample_alg=resample_alg, tps=True)
 
         # We should also get the correct time but this is a bit
@@ -104,16 +98,16 @@ class SARWind(Nansat, object):
         dir_from_band_no = aux.get_band_number({"standard_name": "wind_from_direction"})
         wind_from = aux[dir_from_band_no]
         self.add_band(
-            array = wind_from,
-            parameters = {'wkv': 'wind_from_direction', 'name': 'wind_from_direction'})
-            # , 'time': wdir_time})
-        
+            array=wind_from,
+            parameters={'wkv': 'wind_from_direction', 'name': 'wind_from_direction'})
+        # , 'time': wdir_time})
+
         # Store model wind speed
         speed_band_no = aux.get_band_number({"standard_name": "wind_speed"})
         self.add_band(
-            array = aux[speed_band_no],
-            nomem = True,
-            parameters = {'wkv': 'wind_speed', 'name': 'model_windspeed'})
+            array=aux[speed_band_no],
+            nomem=True,
+            parameters={'wkv': 'wind_speed', 'name': 'model_windspeed'})
         # , 'time': wdir_time})
 
         logging.info('Calculating SAR wind with CMOD...')
@@ -144,7 +138,7 @@ class SARWind(Nansat, object):
             parameters={
                 'wkv': 'wind_speed',
                 'name': 'windspeed',
-                #'wind_direction_time': wind_direction_time
+                # 'wind_direction_time': wind_direction_time
             })
 
         u = -windspeed*np.sin(wind_from * np.pi / 180.0)
@@ -166,27 +160,27 @@ class SARWind(Nansat, object):
             self.get_metadata('sar_filename'))
         )
 
-    def get_bands_to_export(self, bands):
-        if not bands:
+    def export2netcdf(self, bands=None, history_message='', *args, **kwargs):
+        """ Export dataset to NetCDF-CF and add metadata.
+        """
+        if "filename" not in kwargs.keys():
+            filename = self.filename.split("/")[-1].split(".")[0] + "_wind.nc"
+            kwargs["filename"] = filename
+        else:
+            filename = kwargs["filename"]
+
+        bands = kwargs.pop('bands', None)
+        if bands is None:
             bands = [self.get_band_number('wind_from_direction'),
                      self.get_band_number('windspeed'),
                      self.get_band_number('model_windspeed'),
                      self.get_band_number('U'),
                      self.get_band_number('V'),]
-        return bands
 
-    def _export(self, *args, **kwargs):
-        bands = kwargs.pop('bands', None)
-        # TODO: add name of original file to metadata
+        # TODO: add dataset metadata_id of original file to metadata
 
-        super(SARWind, self).export(bands=self.get_bands_to_export(bands), *args, **kwargs)
-
-    def export2netcdf(self, history_message='', filename='', bands=None):
-        if not filename:
-            raise ValueError('Please provide a netcdf filename!')
-
-        # Export data to netcdf
-        self._export(filename=filename, bands=bands)
+        # Export with Nansat
+        super(SARWind, self).export(bands=bands, *args, **kwargs)
 
         # Get metadata
         metadata = self.get_metadata()
@@ -206,9 +200,8 @@ class SARWind(Nansat, object):
 
         metadata['history'] = history_message
 
-        # Get and set dataset id
-        if 'id' not in metadata.keys():
-            metadata['id'] = str(uuid.uuid4())
+        # Set dataset id - this is now a new dataset
+        metadata['id'] = str(uuid.uuid4())
 
         # Set global metadata
         sar_filename = metadata['sar_filename'].split('/')[-1]

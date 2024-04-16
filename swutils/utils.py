@@ -16,7 +16,7 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
     """ Plot a map of the wind field in w.
     """
     land_f = cfeature.NaturalEarthFeature('physical', 'land', '50m', edgecolor='face',
-        facecolor='lightgray')
+                                          facecolor='lightgray')
 
     # FIG 1
     ax1 = plt.subplot(projection=ccrs.PlateCarree())
@@ -33,41 +33,25 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
     uu = - wspeed * np.sin(wind_from * np.pi / 180.0)
     vv = - wspeed * np.cos(wind_from * np.pi / 180.0)
 
-
     da = xr.DataArray(wspeed, dims=["y", "x"],
                       coords={"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
-    dp = 15
-    du = xr.DataArray(uu[::dp,::dp], dims=["y", "x"],
-        coords={"lat": (("y", "x"), mlat[::dp,::dp]), "lon": (("y", "x"), mlon[::dp,::dp])})
-    dv = xr.DataArray(vv[::dp,::dp], dims=["y", "x"],
-        coords={"lat": (("y", "x"), mlat[::dp,::dp]), "lon": (("y", "x"), mlon[::dp,::dp])})
-    ds = xr.Dataset({"du": du, "dv": dv})
-
     da.plot.pcolormesh("lon", "lat", ax=ax1, vmin=vmin, vmax=vmax, cmap=cmocean.cm.speed,
-        add_colorbar=cb)
-    #ds = xr.open_dataset(w.filename)
-    #ds.assign_coords({"lat": (("y", "x"), mlat), "lon": (("y", "x"), mlon)})
+                       add_colorbar=cb)
+
+    dp = 15
+    du = xr.DataArray(uu[::dp, ::dp], dims=["y", "x"],
+                      coords={"lat": (("y", "x"), mlat[::dp, ::dp]),
+                              "lon": (("y", "x"), mlon[::dp, ::dp])})
+    dv = xr.DataArray(vv[::dp, ::dp], dims=["y", "x"],
+                      coords={"lat": (("y", "x"), mlat[::dp, ::dp]),
+                              "lon": (("y", "x"), mlon[::dp, ::dp])})
+    ds = xr.Dataset({"du": du, "dv": dv})
     ds.plot.quiver(x="lon", y="lat", u="du", v="dv", ax=ax1, angles="xy", headwidth=2, width=0.001)
+
     cb = False
     ax1.add_feature(cfeature.LAND, zorder=100, edgecolor='k')
-    #ax1.coastlines()
     ax1.gridlines(draw_labels=True)
     if title is None:
         plt.title('Wind on %s' % w.time_coverage_start.strftime('%Y-%m-%d'))
 
-    # if add_gc:
-    #     date = datetime.datetime(
-    #         ds.time_coverage_start.year,
-    #         ds.time_coverage_start.month,
-    #         ds.time_coverage_start.day
-    #     )
-    #     gc = Dataset.objects.get(entry_title__contains='globcurrent',
-    #         time_coverage_start=date)
-    #     n = Nansat(gc.dataseturi_set.all()[0].uri)
-    #     n.reproject(m, addmask=False)
-    #     u = n['eastward_geostrophic_current_velocity']
-    #     v = n['northward_geostrophic_current_velocity']
-    #     # Add quiver plot...
-
     plt.show()
-    #plt.savefig(png_fn)

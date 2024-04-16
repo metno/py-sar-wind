@@ -54,7 +54,7 @@ def testSARWind_using_s1EWnc_arome_filenames(sarEW_NBS, arome):
     Arome Arctic model.
     """
     w = SARWind(sarEW_NBS, arome)
-    assert type(w) == SARWind
+    assert isinstance(w) == SARWind
 
 
 @pytest.mark.safe
@@ -65,4 +65,4 @@ def testSARWind_using_s1IWDVsafe_meps_filenames(sarIW_SAFE, arome):
     from MEPS model.
     """
     w = SARWind(sarIW_SAFE, arome)
-    assert type(w) == SARWind
+    assert isinstance(w) == SARWind
