@@ -240,8 +240,12 @@ class SARWind(Nansat, object):
 
         # Set global metadata
         sar_filename = metadata["sar_filename"].split("/")[-1]
+        platforms = {
+            "S1A": ["Sentinel-1A", "SAR-C"],
+            "S1B": ["Sentinel-1B", "SAR-C"],
+        }
         metadata["title"] = "Surface wind estimated from %s NRCS" % sar_filename
-        metadata["title_no"] = "Overflate vind utledet fra %s" % sar_filename
+        metadata["title_no"] = "Overflate vind utledet fra %s NRCS" % sar_filename
         metadata["creator_role"] = "Technical contact"
         metadata["creator_type"] = "person"
         metadata["creator_name"] = "Morten Wergeland Hansen"
@@ -252,37 +256,38 @@ class SARWind(Nansat, object):
         metadata["contributor_email"] = "froded@met.no"
         metadata["contributor_institution"] = "Norwegian Meteorological Institute (MET Norway)"
         metadata["project"] = "MET Norway core services (METNCS)"
-        metadata["institution"] = "Norwegian Meteorological Institute (MET NOrway)"
+        metadata["institution"] = "Norwegian Meteorological Institute (MET Norway)"
         metadata["publisher_type"] = "institution"
         metadata["publisher_name"] = "Norwegian Meteorological Institute"
         metadata["publisher_url"] = "https://www.met.no/"
-        metadata["publisher_email"] = "csw-services@met.no"
-        metadata["references"] = "https://www.researchgate.net/publication/"\
-            "288260682_CMOD5_An_improved_geophysical_model_function_for_ERS_C-band_scatterometry "\
-            "(Scientific publication)"
-        metadata["doi"] = "10.1029/2006JC003743"
+        metadata["publisher_email"] = "data-management-group@met.no"
+        metadata["references"] = "https://doi.org/10.1029/2006JC003743 (Scientific publication)"
         metadata["dataset_production_status"] = "Complete"
-        metadata["summary"] = "Derived wind information based on the SENTINEL-1 C-band synthetic" \
-            " aperture radar mission"
-        metadata["summary_no"] = "Beregnet vindstyrkt og vindretning utledet fra SENTINEL-1 "\
-            "C-band Synthetic Aperture Radar (SAR) mission"
-        metadata["platform"] = "Sentinel-1%s" % sar_filename[2]
+        metadata["summary"] = ("Wind speed calculated from C-band Synthetic"
+                               " Aperture Radar (SAR) Normalized Radar Cross Section (NRCS)"
+                               " and model forecast wind, using CMOD5n. The wind speed is "
+                               "calculated for neutrally stable conditions and is, as such, "
+                               "equivalent to the wind stress.")
+        metadata["summary_no"] = ("Vindstyrke beregnet fra SAR C-bånd tilbakespredning og "
+                                  "vindretning fra varslingsmodell, ved bruk av CMOD5n. "
+                                  "Vindstyrken er beregnet under antagelse av nøytral "
+                                  "atmosfærestabilitet, og er dermed representativ for "
+                                  "vindstress.")
+        metadata["platform"] = platforms[sar_filename[:3]][0]
         metadata["platform_vocabulary"] = "https://vocab.met.no/mmd/Platform/Sentinel-1A"
-        metadata["instrument"] = "SAR-C"
+        metadata["instrument"] = platforms[sar_filename[:3]][1]
         metadata["instrument_vocabulary"] = "https://vocab.met.no/mmd/Instrument/SAR-C"
-        metadata["Conventions"] = "CF-1.10,ACDD-1.3"
-        metadata["keywords"] = "GCMDSK:Earth Science > Oceans > RADAR backscatter > Wind"
-        metadata["keywords"] = "GCMDSK:Earth Science > Oceans > RADAR backscatter > "\
-            "Wind, GCMDSK:Earth Science > Spectral/Engineering > RADAR > RADAR imagery,"\
-            "GCMDLOC:Geographic Region > Northern Hemisphere, GCMDLOC:Vertical Location > "\
-            "Sea Surface, GCMDPROV: Government Agencies-non-US > Norway > NO/MET > "\
-            "Norwegian Meteorological Institute"
-        metadata["keywords_vocabulary"] = "GCMDSK:GCMD Science Keywords:"\
-            "https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/sciencekeywords,"\
-            "GCMDPROV:GCMD Providers:https://gcmd.earthdata.nasa.gov/kms/concepts/"\
-            "concept_scheme/providers,"\
-            "GCMDLOC:GCMD Locations:https://gcmd.earthdata.nasa.gov/kms/concepts/"\
-            "concept_scheme/locations"
+        metadata["Conventions"] = "CF-1.10, ACDD-1.3"
+        metadata["keywords"] = (
+            "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > SURFACE WINDS > WIND SPEED, "
+            "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > WIND STRESS, "
+            "GEMET: Atmospheric conditions, "
+            "NORTHEMES: Vær og klima")
+        metadata["keywords_vocabulary"] = (
+            "GCMDSK:GCMD Science Keywords:https://vocab.met.no/GCMDSK, "
+            "GEMET:INSPIRE Themes:http://inspire.ec.europa.eu/theme, "
+            "NORTHEMES:GeoNorge Themes:https://register.geonorge.no/metadata-kodelister/"
+            "nasjonal-temainndeling")
 
         # Get image boundary
         lon, lat = self.get_border()
