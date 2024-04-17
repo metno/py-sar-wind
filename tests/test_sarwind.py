@@ -53,6 +53,20 @@ def testSARWind_get_model_wind_field(arome):
 
 
 @pytest.mark.sarwind
+def testSARWind_set_related_dataset(meps_20240416, s1a_20240416):
+    """ Test that the related dataset attribute is correctly added
+    when it exists in the input datasets.
+    """
+    w = SARWind(s1a_20240416, meps_20240416)
+    reld = ("no.met:11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+            "no.met:d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+    assert w.get_metadata("related_dataset") == reld
+    with tempfile.NamedTemporaryFile(delete=True) as fp:
+        w.export(filename=fp.name)
+        assert os.path.isfile(fp.name)
+    assert not os.path.isfile(fp.name)
+
+@pytest.mark.sarwind
 def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
     """ Test the export function
     """

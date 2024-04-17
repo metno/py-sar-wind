@@ -10,7 +10,7 @@ import logging
 
 import numpy as np
 
-from datetime import datetime
+import datetime
 
 from nansat.nansat import Nansat
 
@@ -116,7 +116,7 @@ class SARWind(Nansat, object):
 
         logging.info("Calculating SAR wind with CMOD...")
 
-        startTime = datetime.now()
+        startTime = datetime.datetime.now()
 
         look_dir = self[self.get_band_number({"standard_name": "sensor_azimuth_angle"})]
         look_dir[np.isnan(wind_from)] = np.nan
@@ -126,7 +126,7 @@ class SARWind(Nansat, object):
         windspeed = cmod5n_inverse(s0vv, look_relative_wind_direction,
                                    self["incidence_angle"])
 
-        logging.info("Calculation time: " + str(datetime.now() - startTime))
+        logging.info("Calculation time: " + str(datetime.datetime.now() - startTime))
 
         windspeed[np.where(np.isinf(windspeed))] = np.nan
 
@@ -153,15 +153,34 @@ class SARWind(Nansat, object):
         # set winddir_time to global metadata
         # self.set_metadata("winddir_time", str(wind_direction_time))
 
-        # Update history
+        # Update metadata
         metadata = self.get_metadata()
+        auxm = aux.get_metadata()
+        self.set_related_dataset(metadata, auxm)
+
         history = metadata.get("history", "")
-        self.set_metadata("history", history + "%s: %s(%s, %s)" % (
-            datetime.now(tz=pytz.UTC).isoformat(),
+        self.set_metadata("swhistory", history + "%s: %s(%s, %s)" % (
+            datetime.datetime.now(tz=pytz.UTC).isoformat(),
             "SARWind",
             self.get_metadata("wind_filename"),
             self.get_metadata("sar_filename"))
         )
+
+    def set_related_dataset(self, metadata, auxm):
+        related_dataset = ""
+        if "id" in metadata.keys() and "naming_authority" in metadata.keys():
+            related_dataset += "%s:%s (auxiliary)" % (metadata.get("naming_authority", ""),
+                                                     metadata.get("id", ""))
+        if "id" in auxm.keys() and "naming_authority" in auxm.keys():
+            related_dataset += "%s:%s (auxiliary)" % (auxm.get("naming_authority", ""),
+                                                     auxm.get("id", ""))
+        if related_dataset != "":
+            self.set_metadata(
+                "related_dataset",
+                "%s:%s (auxiliary), %s:%s (auxiliary)" % (metadata.get("naming_authority", ""),
+                                                          metadata.get("id", ""),
+                                                          auxm.get("naming_authority", ""),
+                                                          auxm.get("id", "")))
 
     @staticmethod
     def get_model_wind_field(aux):
@@ -209,7 +228,7 @@ class SARWind(Nansat, object):
         """
         return np.mod(180. + np.arctan2(u, v) * 180./np.pi, 360)
 
-    def export(self, bands=None, history_message="", *args, **kwargs):
+    def export(self, bands=None, *args, **kwargs):
         """ Export dataset to NetCDF-CF and add metadata.
         """
         if "filename" not in kwargs.keys():
@@ -229,55 +248,50 @@ class SARWind(Nansat, object):
 
         # TODO: add dataset metadata_id of original file to metadata
 
+        # Get image boundary
+        lon, lat = self.get_border()
+        boundary = "POLYGON (("
+        for la, lo in list(zip(lat, lon)):
+            boundary += "%.2f %.2f, " % (la, lo)
+        boundary = boundary[:-2]+"))"
+
         # Export with Nansat
         super().export(bands=bands, *args, **kwargs)
 
+        # TODO: Move below code to broker/config
+        ####
+
         # Get metadata
-        metadata = self.get_metadata()
+        old_metadata = self.get_metadata()
 
-        # Set dataset id - this is now a new dataset
-        metadata["id"] = str(uuid.uuid4())
 
-        # Set global metadata
-        sar_filename = metadata["sar_filename"].split("/")[-1]
+        sar_filename = old_metadata["sar_filename"].split("/")[-1]
         platforms = {
             "S1A": ["Sentinel-1A", "SAR-C"],
             "S1B": ["Sentinel-1B", "SAR-C"],
         }
+
+        # Set global CF metadata
+        metadata = {}
+        metadata["Conventions"] = "CF-1.10, ACDD-1.3"
+        metadata["history"] = old_metadata["swhistory"]
+
+        # Set global ACDD metadata
+        metadata["id"] = str(uuid.uuid4())
+        metadata["naming_authority"] = "no.met"
+        metadata["date_created"] = datetime.datetime.utcnow().isoformat() + "Z"
         metadata["title"] = "Surface wind estimated from %s NRCS" % sar_filename
-        metadata["title_no"] = "Overflate vind utledet fra %s NRCS" % sar_filename
-        metadata["creator_role"] = "Technical contact"
-        metadata["creator_type"] = "person"
-        metadata["creator_name"] = "Morten Wergeland Hansen"
-        metadata["creator_email"] = "mortenwh@met.no"
-        metadata["creator_institution"] = "Norwegian Meteorological Institute (MET Norway)"
-        metadata["contributor_name"] = "Frode Dinessen"
-        metadata["contributor_role"] = "Metadata author"
-        metadata["contributor_email"] = "froded@met.no"
-        metadata["contributor_institution"] = "Norwegian Meteorological Institute (MET Norway)"
-        metadata["project"] = "MET Norway core services (METNCS)"
-        metadata["institution"] = "Norwegian Meteorological Institute (MET Norway)"
-        metadata["publisher_type"] = "institution"
-        metadata["publisher_name"] = "Norwegian Meteorological Institute"
-        metadata["publisher_url"] = "https://www.met.no/"
-        metadata["publisher_email"] = "data-management-group@met.no"
-        metadata["references"] = "https://doi.org/10.1029/2006JC003743 (Scientific publication)"
-        metadata["dataset_production_status"] = "Complete"
         metadata["summary"] = ("Wind speed calculated from C-band Synthetic"
                                " Aperture Radar (SAR) Normalized Radar Cross Section (NRCS)"
                                " and model forecast wind, using CMOD5n. The wind speed is "
-                               "calculated for neutrally stable conditions and is, as such, "
+                               "calculated for neutrally stable conditions and is "
                                "equivalent to the wind stress.")
-        metadata["summary_no"] = ("Vindstyrke beregnet fra SAR C-bånd tilbakespredning og "
-                                  "vindretning fra varslingsmodell, ved bruk av CMOD5n. "
-                                  "Vindstyrken er beregnet under antagelse av nøytral "
-                                  "atmosfærestabilitet, og er dermed representativ for "
-                                  "vindstress.")
-        metadata["platform"] = platforms[sar_filename[:3]][0]
-        metadata["platform_vocabulary"] = "https://vocab.met.no/mmd/Platform/Sentinel-1A"
-        metadata["instrument"] = platforms[sar_filename[:3]][1]
-        metadata["instrument_vocabulary"] = "https://vocab.met.no/mmd/Instrument/SAR-C"
-        metadata["Conventions"] = "CF-1.10, ACDD-1.3"
+        metadata["time_coverage_start"] = old_metadata["time_coverage_start"]
+        metadata["geospatial_lat_max"] = "%.2f" % lat.max()
+        metadata["geospatial_lat_min"] = "%.2f" % lat.min()
+        metadata["geospatial_lon_max"] = "%.2f" % lon.max()
+        metadata["geospatial_lon_min"] = "%.2f" % lon.min()
+        metadata["license"] = "https://spdx.org/licenses/CC-BY-4.0.html (CC-BY-4.0)"
         metadata["keywords"] = (
             "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > SURFACE WINDS > WIND SPEED, "
             "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > WIND STRESS, "
@@ -289,20 +303,51 @@ class SARWind(Nansat, object):
             "NORTHEMES:GeoNorge Themes:https://register.geonorge.no/metadata-kodelister/"
             "nasjonal-temainndeling")
 
-        # Get image boundary
-        lon, lat = self.get_border()
-        boundary = "POLYGON (("
-        for la, lo in list(zip(lat, lon)):
-            boundary += "%.2f %.2f, "%(la, lo)
-        boundary = boundary[:-2]+"))"
-        # Set bounds as (lat,lon) following ACDD convention and EPSG:4326
+        metadata["publisher_type"] = "institution"
+        metadata["publisher_email"] = "data-management-group@met.no"
+        metadata["time_coverage_end"] = old_metadata["time_coverage_end"]
         metadata["geospatial_bounds"] = boundary
-        metadata["geospatial_bounds_crs"] = "EPSG:4326"
+        metadata["processing_level"] = "Operational"
+        metadata["contributor_role"] = "Technical contact"
+        metadata["creator_name"] = "Morten Wergeland Hansen"
+        metadata["contributor_name"] = "Frode Dinessen"
+        metadata["creator_type"] = "person"
+        metadata["creator_email"] = "mortenwh@met.no"
+        metadata["creator_institution"] = "Norwegian Meteorological Institute (MET Norway)"
+        metadata["institution"] = "Norwegian Meteorological Institute (MET Norway)"
+        metadata["publisher_url"] = "https://www.met.no/"
+        metadata["references"] = "https://doi.org/10.1029/2006JC003743 (Scientific publication)"
+        metadata["project"] = ("SIOS – Infrastructure development of the Norwegian node "
+                               "(SIOS-InfraNor)")
+        metadata["platform"] = platforms[sar_filename[:3]][0]
+        metadata["platform_vocabulary"] = "https://vocab.met.no/mmd/Platform/Sentinel-1A"
+        metadata["instrument"] = platforms[sar_filename[:3]][1]
+        metadata["instrument_vocabulary"] = "https://vocab.met.no/mmd/Instrument/SAR-C"
+        metadata["source"] = "Space Borne Instrument"
+        metadata["publisher_name"] = "Norwegian Meteorological Institute"
 
-        metadata["sar_wind_resource"] = \
-            "https://github.com/metno/met-sar-vind"
+        metadata["spatial_representation"] = "grid"
+        metadata["title_no"] = "Overflate vind utledet fra %s NRCS" % sar_filename
+        metadata["summary_no"] = ("Vindstyrke beregnet fra SAR C-bånd tilbakespredning og "
+                                  "vindretning fra varslingsmodell, ved bruk av CMOD5n. "
+                                  "Vindstyrken er beregnet under antagelse av nøytral "
+                                  "atmosfærestabilitet, og er representativ for "
+                                  "vindstress.")
+        metadata["dataset_production_status"] = "Complete"
+        metadata["access_constraint"] = "Open"
+        metadata["creator_role"] = "Technical contact"
+        metadata["contributor_email"] = "froded@met.no"
+        metadata["contributor_institution"] = "Norwegian Meteorological Institute (MET Norway)"
+        if "related_dataset" in old_metadata.keys():
+            metadata["related_dataset"] = old_metadata["related_dataset"]
+        metadata["iso_topic_category"] = "climatologyMeteorologyAtmosphere"
+        metadata["quality_control"] = "No quality control"
+
+        ### END MOVE
 
         # Set metadata from dict
-        ncid = netCDF4.Dataset(filename, "a")
-        ncid.setncatts(metadata)
-        ncid.close()
+        nc_ds = netCDF4.Dataset(filename, "a")
+        for att in nc_ds.ncattrs():
+            nc_ds.delncattr(att)
+        nc_ds.setncatts(metadata)
+        nc_ds.close()
