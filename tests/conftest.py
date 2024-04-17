@@ -82,6 +82,7 @@ def sarIW_SAFE(filesDir):
     filename = "S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A.SAFE.nc"
     return os.path.join(filesDir, filename)
 
+
 @pytest.fixture(scope="session")
 def s1a_20240416(filesDir):
     """ Test file with id and naming_authority.
@@ -89,12 +90,14 @@ def s1a_20240416(filesDir):
     filename = "S1A_IW_GRDM_1SDV_20240416T171946_20240416T172013_053462_067C88_E676.nc"
     return os.path.join(filesDir, filename)
 
+
 @pytest.fixture(scope="session")
 def meps_20240416(filesDir):
     """ Test file with id and naming_authority.
     """
     filename = "meps_mbr000_sfc_20240416T18Z.nc"
     return os.path.join(filesDir, filename)
+
 
 @pytest.fixture(scope="session")
 def meps(filesDir):

@@ -170,10 +170,10 @@ class SARWind(Nansat, object):
         related_dataset = ""
         if "id" in metadata.keys() and "naming_authority" in metadata.keys():
             related_dataset += "%s:%s (auxiliary)" % (metadata.get("naming_authority", ""),
-                                                     metadata.get("id", ""))
+                                                      metadata.get("id", ""))
         if "id" in auxm.keys() and "naming_authority" in auxm.keys():
             related_dataset += "%s:%s (auxiliary)" % (auxm.get("naming_authority", ""),
-                                                     auxm.get("id", ""))
+                                                      auxm.get("id", ""))
         if related_dataset != "":
             self.set_metadata(
                 "related_dataset",
@@ -264,7 +264,6 @@ class SARWind(Nansat, object):
         # Get metadata
         old_metadata = self.get_metadata()
 
-
         sar_filename = old_metadata["sar_filename"].split("/")[-1]
         platforms = {
             "S1A": ["Sentinel-1A", "SAR-C"],
@@ -343,7 +342,7 @@ class SARWind(Nansat, object):
         metadata["iso_topic_category"] = "climatologyMeteorologyAtmosphere"
         metadata["quality_control"] = "No quality control"
 
-        ### END MOVE
+        # END MOVE
 
         # Set metadata from dict
         nc_ds = netCDF4.Dataset(filename, "a")

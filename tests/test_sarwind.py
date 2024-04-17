@@ -66,6 +66,7 @@ def testSARWind_set_related_dataset(meps_20240416, s1a_20240416):
         assert os.path.isfile(fp.name)
     assert not os.path.isfile(fp.name)
 
+
 @pytest.mark.sarwind
 def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
     """ Test the export function
