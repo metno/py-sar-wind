@@ -51,7 +51,7 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
     cb = False
     ax1.add_feature(cfeature.LAND, zorder=100, edgecolor='k')
     ax1.gridlines(draw_labels=True)
-    if title is None:
-        plt.title('Wind on %s' % w.time_coverage_start.strftime('%Y-%m-%d'))
+    # if title is None:
+    #     plt.title('Wind on %s' % w.time_coverage_start.strftime('%Y-%m-%d'))
 
     plt.show()
