@@ -7,10 +7,11 @@ import pytz
 import uuid
 import netCDF4
 import logging
+import datetime
 
 import numpy as np
 
-import datetime
+from pytz import timezone
 
 from nansat.nansat import Nansat
 
@@ -246,8 +247,6 @@ class SARWind(Nansat, object):
                      self.get_band_number("U"),
                      self.get_band_number("V"),]
 
-        # TODO: add dataset metadata_id of original file to metadata
-
         # Get image boundary
         lon, lat = self.get_border()
         boundary = "POLYGON (("
@@ -278,8 +277,8 @@ class SARWind(Nansat, object):
         # Set global ACDD metadata
         metadata["id"] = str(uuid.uuid4())
         metadata["naming_authority"] = "no.met"
-        metadata["date_created"] = datetime.datetime.utcnow().isoformat() + "Z"
-        metadata["title"] = "Surface wind estimated from %s NRCS" % sar_filename
+        metadata["date_created"] = datetime.datetime.now(timezone("utc")).isoformat()
+        metadata["title"] = "Surface wind (10m) estimated from %s NRCS" % sar_filename
         metadata["summary"] = ("Wind speed calculated from C-band Synthetic"
                                " Aperture Radar (SAR) Normalized Radar Cross Section (NRCS)"
                                " and model forecast wind, using CMOD5n. The wind speed is "
@@ -326,7 +325,7 @@ class SARWind(Nansat, object):
         metadata["publisher_name"] = "Norwegian Meteorological Institute"
 
         metadata["spatial_representation"] = "grid"
-        metadata["title_no"] = "Overflate vind utledet fra %s NRCS" % sar_filename
+        metadata["title_no"] = "Overflate vind (10m) utledet fra %s NRCS" % sar_filename
         metadata["summary_no"] = ("Vindstyrke beregnet fra SAR C-bånd tilbakespredning og "
                                   "vindretning fra varslingsmodell, ved bruk av CMOD5n. "
                                   "Vindstyrken er beregnet under antagelse av nøytral "

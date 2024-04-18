@@ -1,0 +1,23 @@
+sar_data:
+  outpath: /home/froded/data/sarwind/
+  scp: False
+  scp_path: /lustre/storeB/project/fou/fd/project/sar-wind/products/
+  scp_host: ppi-clogin-a1.met.no
+  scp_user: froded
+  id_rsa: /home/ubuntu/.ssh/id_rsa
+  BINDIR: /home/fou-fd-oper/software/sarwind/met-sar-vind/sarwind
+  BASEDIR: /lustre/storeA/project/fou/fd/project/sarwind
+  BASEDIR: /home/froded/data/sarwind
+  RAWDIR: raw  # BASEDIR/raw
+  TMPDIR: tmp  # BASEDIR/tmp
+  PNGDIR: png  # BASEDIR/png
+  NETCDFDIR: netcdf  # BASEDIR/netcdf
+  LOGDIR: log  # BASEDIR/log
+  MODELDIR: /lustre/storeB/project/metproduction/products/arome_arctic
+  USER_NBS:
+  PASSWD_NBS:
+  url: https://colhub.met.no/
+  typ: GRD
+  mode: EW
+
+
