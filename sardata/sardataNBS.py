@@ -8,59 +8,89 @@ from netCDF4 import Dataset
 
 
 class SARData():
-    """A class for getting Sentinel-1 CF-NetCDF data from the
-    Norwegian Ground Segment (NBS).
+    """
+     A class for getting Sentinel-1 netCDF data from the Norwegian Ground Segment (NBS)
 
-    Parameters
-    -----------
-    endpoint : str
-       URL to NBS. Default: https://nbs.csw.met.no/csw
-    bbox : float list
-       A boundary box for search area specified in latitude and
-       longitude bbox = [lon_min, lat_min, lon_max, lat_max]
-    start : datetime.datetime
-       Start time of the search
-    stop :  datetime.datetime
-       Stop time of the search
-    str_filter : str
-       String filter to limit the search, e.g., "S1A_EW_GRDM_1SDH%"
+     Parameters
+     -----------
+     endpoint : str
+               URL to NBS. Default: https://nbs.csw.met.no/csw
+
+     bbox     : int list
+               A boudary box for search area speified in latitude and longitude
+               bbox = [lon_min, lat_min, lon_max, lat_max]
+
+               Example:
+               >>> bbox = [-10, 75, 40, 85]
+
+     start    : datetime object
+               Specify the start time of the range to serchthe
+
+     stop     :  datetime object
+               Specify the stop time of the range to serchthe
+
+               Example:
+               >>> from datetime import datetime, timedelta
+               >>> stop = datetime(2010, 1, 1, 12, 30, 59).replace(tzinfo=pytz.utc)
+               >>> start = stop - timedelta(days=7)
+
+     kw_names : str
+               A search string filter to limit the result of a search.
+               Example:
+               >>> kw_name='S1A_EW_GRDM_1SDH%'
 
     """
 
-    def __init__(self, bbox, start, stop, str_filter=None, endpoint='https://nbs.csw.met.no/csw',
-                 crs='urn:ogc:def:crs:OGC:1.3:CRS84', *args, **kwargs):
+    def __init__(self, endpoint='https://nbs.csw.met.no/csw', bbox=None, start=None, stop=None,
+                 kw_names=None, crs='urn:ogc:def:crs:OGC:1.3:CRS84', *args, **kwargs):
+        super(SARData, self).__init__(*args, **kwargs)
         constraints = []
+        csw = None
 
-        # connect to the endpoint
-        self.csw = CatalogueServiceWeb(endpoint, timeout=60)
-            
-        begin, end = self._fes_date_filter(start, stop)
-        constraints.append(begin)
-        constraints.append(end)
+        # connect to endpoint
+        try:
+            csw = self._get_csw_connection(endpoint)
+        except Exception as e:
+            print("Exception: %s" % str(e))
 
-        bbox_crs = fes.BBox(bbox, crs=crs)
-        constraints.append(bbox_crs)
-
-        if str_filter:
-            freetxt_filt = self._get_freetxt_search(str_filter)
+        if kw_names:
+            freetxt_filt = self._get_freetxt_search(kw_names)
             constraints.append(freetxt_filt)
 
-        filter_list = [fes.And(constraints)]
+        if all(v is not None for v in [start, stop]):
+            begin, end = self._fes_date_filter(start, stop)
+            constraints.append(begin)
+            constraints.append(end)
+
+        if bbox:
+            bbox_crs = fes.BBox(bbox, crs=crs)
+            constraints.append(bbox_crs)
+        if len(constraints) >= 2:
+            filter_list = [fes.And(constraints)]
+        else:
+            filter_list = constraints
 
         self._get_csw_records(csw, filter_list, pagesize=10, maxrecords=100)
-
-        self.urls = []
+        self.csw = csw
+        url_opendap = []
 
         for key, value in list(csw.records.items()):
             for ref in value.references:
                 if ref['scheme'] == 'OPeNDAP:OPeNDAP':
-                    self.urls.append(ref['url'])
-                    continue
+                    url_opendap.append(ref['url'])
+        self.url_opendap = url_opendap
 
-    def _get_freetxt_search(self, str_filter):
-        """Returns a CSW search object based on input string.
+    def _get_csw_connection(self, endpoint):
+        """ Connect to CSW server
         """
-        freetxt_filt = fes.PropertyIsLike('csw:AnyText',  literal=('%s' % str_filter),
+        csw = CatalogueServiceWeb(endpoint, timeout=60)
+        return csw
+
+    def _get_freetxt_search(self, kw_names):
+        """
+        Retuns a CSW search object based on input string
+        """
+        freetxt_filt = fes.PropertyIsLike('csw:AnyText',  literal=('%s' % kw_names),
                                           escapeChar='\\', singleChar='?',
                                           wildCard='%', matchCase=True)
         return freetxt_filt
@@ -72,41 +102,22 @@ class SARData():
         """
         csw_records = {}
         startposition = 0
-        nextrecord = getattr(self.csw, "results", 1)
+        nextrecord = getattr(csw, "results", 1)
         while nextrecord != 0:
-            self.csw.getrecords2(
+            csw.getrecords2(
                 constraints=filter_list,
                 startposition=startposition,
                 maxrecords=pagesize,
                 outputschema="http://www.opengis.net/cat/csw/2.0.2",
                 esn='full',
             )
-            csw_records.update(self.csw.records)
-            if self.csw.results["nextrecord"] == 0:
+            csw_records.update(csw.records)
+            if csw.results["nextrecord"] == 0:
                 break
             startposition += pagesize + 1  # Last one is included.
             if startposition >= maxrecords:
                 break
-        self.csw.records.update(csw_records)
-
-
-        # Connect to the CSW service
-        self._set_csw_connection(endpoint=endpoint)
-
-        next_record = 1
-        while next_record != 0:
-            # Iterate pages until the requested max_records is reached
-            self.conn_csw.getrecords2(
-                constraints=filter_list,
-                startposition=start_position,
-                maxrecords=pagesize,
-                outputschema="http://www.opengis.net/cat/csw/2.0.2",
-                esn='full')
-            csw_records.update(self.conn_csw.records)
-            next_record = self.conn_csw.results["nextrecord"]
-            start_position += pagesize + 1  # Last one is included.
-            if start_position >= max_records:
-                next_record = 0
+        csw.records.update(csw_records)
 
     def _fes_date_filter(self, start, stop, constraint="overlaps"):
         """
