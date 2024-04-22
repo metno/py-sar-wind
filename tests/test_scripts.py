@@ -67,7 +67,7 @@ def testProcess_sar_wind_process_with_arome(monkeypatch):
 
 
 @pytest.mark.sarwind
-def testProcess_sar_wind_create_parser(monkeypatch, caplog):
+def testProcess_sar_wind_create_parser(monkeypatch):
     """Test create_parser
     """
     p = create_parser()
@@ -75,10 +75,11 @@ def testProcess_sar_wind_create_parser(monkeypatch, caplog):
 
 
 @pytest.mark.sarwind
-def testProcess_sar_wind_main(monkeypatch):
+def testProcess_sar_wind_main(monkeypatch, caplog):
     """Test main function of the process_sar_wind script.
     """
-    sar_urls = ["/path/to/sar/fn.nc"]
+    caplog.set_level(logging.DEBUG)
+    sar_urls = ["/path/to/sar/fn.nc", "/path/to/sar/fn.nc"]
     meps = "https://opendap.url.no/of/a/meps/dataset.nc"
     arome = "https://opendap.url.no/of/a/arome/dataset.nc"
     out_fn_meps = "sar_meps_wind.nc"
@@ -109,4 +110,6 @@ def testProcess_sar_wind_main(monkeypatch):
             lines = fp.readlines()
             assert b"/path/to/sar/fn.nc" in lines[0]
             assert b"/path/to/sar/fn.nc" in lines[1]
+            main(args)
+            assert "Already processed" in caplog.text
         assert not os.path.isfile(fp.name)

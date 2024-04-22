@@ -97,7 +97,12 @@ def main(args=None):
     """Run tools to process wind from SAR.
     """
     sar_urls = get_sar(time=datetime.datetime.fromisoformat(args.time), dt=args.delta)
+    with open(args.processed, "r") as fp:
+        processed_urls = ", ".join(fp.readlines())
     for url in sar_urls:
+        if url in processed_urls:
+            logging.debug("Already processed: %s" % url)
+            continue
         meps, arome = collocate_with(url)
         if meps is not None:
             fnm = process_with_meps(url, meps, args.output_path)
@@ -105,12 +110,12 @@ def main(args=None):
             fna = process_with_arome(url, arome, args.output_path)
         if fnm is not None:
             logging.info("Processed %s.\n" % fnm)
-            with open(args.processed, "a") as fn:
-                fn.write("%s: %s\n" % (url, meps))
+            with open(args.processed, "a") as fp:
+                fp.write("%s: %s\n" % (url, meps))
         if fna is not None:
             logging.info("Processed %s.\n" % fna)
-            with open(args.processed, "a") as fn:
-                fn.write("%s: %s\n" % (url, arome))
+            with open(args.processed, "a") as fp:
+                fp.write("%s: %s\n" % (url, arome))
 
 
 def _main():  # pragma: no cover
