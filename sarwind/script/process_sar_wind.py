@@ -98,7 +98,7 @@ def main(args=None):
     """
     sar_urls = get_sar(time=datetime.datetime.fromisoformat(args.time), dt=args.delta)
     with open(args.processed, "r") as fp:
-        processed_urls = ", ".join(fp.readlines())
+        processed_urls = "; ".join(fp.readlines())
     for url in sar_urls:
         if url in processed_urls:
             logging.debug("Already processed: %s" % url)
@@ -111,11 +111,11 @@ def main(args=None):
         if fnm is not None:
             logging.info("Processed %s.\n" % fnm)
             with open(args.processed, "a") as fp:
-                fp.write("%s: %s\n" % (url, meps))
+                fp.write("%s, %s: %s\n\n" % (url, meps, fnm))
         if fna is not None:
             logging.info("Processed %s.\n" % fna)
             with open(args.processed, "a") as fp:
-                fp.write("%s: %s\n" % (url, arome))
+                fp.write("%s, %s: %s\n\n" % (url, arome, fna))
 
 
 def _main():  # pragma: no cover
