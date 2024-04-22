@@ -1,7 +1,5 @@
 import datetime
 
-from pytz import timezone
-
 from collocation.with_dataset import SearchCSW
 from collocation.with_dataset import AromeArctic
 from collocation.with_dataset import Meps
