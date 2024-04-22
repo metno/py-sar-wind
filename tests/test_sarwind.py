@@ -31,7 +31,7 @@ def testSARWind_init(monkeypatch):
         mp.setattr(Nansat, "get_band_number", lambda *args, **kwargs: 1)
         mp.setattr(Nansat, "resize", lambda *args, **kwargs: 1)
         mp.setattr(Nansat, "reproject", lambda *args, **kwargs: None)
-        mp.setattr(Nansat, "__getitem__", lambda *args, **kwargs: np.array([1,1]))
+        mp.setattr(Nansat, "__getitem__", lambda *args, **kwargs: np.array([1, 1]))
         with pytest.raises(Exception) as ee:
             SARWind("sar.nc", "model.nc")
         assert str(ee.value) == "No SAR NRCS ocean coverage."

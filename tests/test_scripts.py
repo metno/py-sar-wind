@@ -53,6 +53,7 @@ def testProcess_sar_wind_process_with_meps(monkeypatch):
         fn = process_with_meps("/some/path/sar_url.nc", "model_url.nc", "/path/to/out")
         assert fn == fn_out
 
+
 @pytest.mark.sarwind
 def testProcess_sar_wind_process_with_arome(monkeypatch):
     """Test process_with_arome
@@ -82,6 +83,7 @@ def testProcess_sar_wind_main(monkeypatch):
     arome = "https://opendap.url.no/of/a/arome/dataset.nc"
     out_fn_meps = "sar_meps_wind.nc"
     out_fn_arome = "sar_arome_wind.nc"
+
     class MockArgs:
         pass
     args = MockArgs()
