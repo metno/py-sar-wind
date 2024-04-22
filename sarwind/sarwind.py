@@ -73,6 +73,13 @@ class SARWind(Nansat, object):
         # Resize to given pixel size (default 500 m)
         self.resize(pixelsize=pixelsize)
 
+        # Get topography
+        topo = Nansat(os.getenv("GMTED30"))
+        topo.reproject(self, resample_alg=resample_alg, tps=True)
+        land = topo[1] > 0
+        if land.all():
+            raise ValueError("No SAR NRCS ocean coverage.")
+
         # Get VV NRCS
         s0vv = self[self.sigma0_bandNo]
         if self.get_metadata(band_id=self.sigma0_bandNo, key="polarization") == "HH":
@@ -132,8 +139,6 @@ class SARWind(Nansat, object):
         windspeed[np.where(np.isinf(windspeed))] = np.nan
 
         # Mask land
-        topo = Nansat(os.getenv("GMTED30"))
-        topo.reproject(self, resample_alg=resample_alg, tps=True)
         windspeed[topo[1] > 0] = np.nan
 
         # Add wind speed and direction as bands
