@@ -11,8 +11,6 @@ import datetime
 
 import numpy as np
 
-from pytz import timezone
-
 from nansat.nansat import Nansat
 
 from sarwind.cmod5n import cmod5n_inverse
@@ -282,14 +280,15 @@ class SARWind(Nansat, object):
         # Set global ACDD metadata
         metadata["id"] = str(uuid.uuid4())
         metadata["naming_authority"] = "no.met"
-        metadata["date_created"] = datetime.datetime.now(timezone("utc")).isoformat()
+        metadata["date_created"] = datetime.datetime.now(pytz.timezone("utc")).isoformat()
         metadata["title"] = "Surface wind (10m) estimated from %s NRCS" % sar_filename
         metadata["summary"] = ("Wind speed calculated from C-band Synthetic"
                                " Aperture Radar (SAR) Normalized Radar Cross Section (NRCS)"
                                " and model forecast wind, using CMOD5n. The wind speed is "
                                "calculated for neutrally stable conditions and is "
                                "equivalent to the wind stress.")
-        metadata["time_coverage_start"] = old_metadata["time_coverage_start"]
+        metadata["time_coverage_start"] = pytz.utc.localize(
+            datetime.datetime.fromisoformat(old_metadata["time_coverage_start"])).isoformat()
         metadata["geospatial_lat_max"] = "%.2f" % lat.max()
         metadata["geospatial_lat_min"] = "%.2f" % lat.min()
         metadata["geospatial_lon_max"] = "%.2f" % lon.max()
@@ -308,7 +307,8 @@ class SARWind(Nansat, object):
 
         metadata["publisher_type"] = "institution"
         metadata["publisher_email"] = "data-management-group@met.no"
-        metadata["time_coverage_end"] = old_metadata["time_coverage_end"]
+        metadata["time_coverage_end"] = pytz.utc.localize(
+            datetime.datetime.fromisoformat(old_metadata["time_coverage_end"])).isoformat()
         metadata["geospatial_bounds"] = boundary
         metadata["processing_level"] = "Operational"
         metadata["contributor_role"] = "Technical contact"
@@ -338,7 +338,6 @@ class SARWind(Nansat, object):
                                   "vindstress.")
         metadata["dataset_production_status"] = "Complete"
         metadata["access_constraint"] = "Open"
-        metadata["creator_role"] = "Technical contact"
         metadata["contributor_email"] = "froded@met.no"
         metadata["contributor_institution"] = "Norwegian Meteorological Institute (MET Norway)"
         if "related_dataset" in old_metadata.keys():

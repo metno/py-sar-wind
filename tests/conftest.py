@@ -20,6 +20,8 @@ import sys
 import shutil
 import pytest
 
+from pathlib import Path
+
 # Note: This line forces the test suite to import the sarwind package
 # in the current source tree
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
@@ -27,6 +29,17 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pa
 ##
 #  Directory Fixtures
 ##
+
+
+@pytest.fixture(autouse=True)
+def no_mkdir(monkeypatch):
+    monkeypatch.setattr("os.mkdir", lambda *a, **k: None)
+
+
+@pytest.fixture(autouse=True)
+def no_Path_dot_mkdir(monkeypatch):
+    monkeypatch.setattr(Path, "__init__", lambda *a, **k: None)
+    monkeypatch.setattr(Path, "mkdir", lambda *a, **k: None)
 
 
 @pytest.fixture(scope="session")

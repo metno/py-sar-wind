@@ -38,8 +38,9 @@ def testProcess_sar_wind_process(monkeypatch, caplog):
         mp.setattr(SARWind, "__init__", lambda *a, **k: None)
         mp.setattr(SARWind, "export", lambda *a, **k: None)
         mp.setattr(SARWind, "filename", "/some/path/sar_url.nc")
+        mp.setattr(SARWind, "get_metadata", lambda *a, **k: "2024-04-21T17:28:32+00:00")
         fn = process("/some/path/sar_url.nc", "model_url.nc", "/path/to/out", "_ending.nc")
-        assert fn == "/path/to/out/sar_url_ending.nc"
+        assert fn == "/path/to/out/2024/04/21/sar_url_ending.nc"
 
 
 @pytest.mark.sarwind
@@ -109,7 +110,7 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
             assert os.path.isfile(fp.name)
             lines = fp.readlines()
             assert b"/path/to/sar/fn.nc" in lines[0]
-            assert b"/path/to/sar/fn.nc" in lines[1]
+            assert b"/path/to/sar/fn.nc" in lines[2]
             main(args)
             assert "Already processed" in caplog.text
         assert not os.path.isfile(fp.name)
