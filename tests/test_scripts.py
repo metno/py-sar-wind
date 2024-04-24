@@ -7,6 +7,8 @@ import tempfile
 from pytz import timezone
 from argparse import ArgumentParser
 
+from py_mmd_tools.nc_to_mmd import Nc_to_mmd
+
 from sarwind.sarwind import SARWind
 from sarwind.script.process_sar_wind import main
 from sarwind.script.process_sar_wind import process
@@ -83,8 +85,8 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
     sar_urls = ["/path/to/sar/fn.nc", "/path/to/sar/fn.nc"]
     meps = "https://opendap.url.no/of/a/meps/dataset.nc"
     arome = "https://opendap.url.no/of/a/arome/dataset.nc"
-    out_fn_meps = "sar_meps_wind.nc"
-    out_fn_arome = "sar_arome_wind.nc"
+    out_fn_meps = "./2024/03/23/sar_meps_wind.nc"
+    out_fn_arome = "./2024/03/23/sar_arome_wind.nc"
 
     class MockArgs:
         pass
@@ -92,6 +94,9 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
     args.time = datetime.datetime.now(timezone("utc")).isoformat()
     args.delta = 24
     args.output_path = "/path/to/out"
+    args.export_mmd = True
+    args.nc_target_path = "/path/to/target/file.nc"
+    args.odap_target_url = "https://thredds.met.no/thredds/dodsC/sarwind"
     with monkeypatch.context() as mp:
         mp.setattr("sarwind.script.process_sar_wind.get_sar",
                    lambda *a, **k: sar_urls)
@@ -101,6 +106,8 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
                    lambda *a, **k: out_fn_meps)
         mp.setattr("sarwind.script.process_sar_wind.process_with_arome",
                    lambda *a, **k: out_fn_arome)
+        mp.setattr(Nc_to_mmd, "__init__", lambda *a, **k: None)
+        mp.setattr(Nc_to_mmd, "to_mmd", lambda *a, **k: (True, ""))
 
         # NOTE: the file is opened in binary mode, so the text will be
         #       byte-like in this case.
