@@ -151,8 +151,10 @@ def main(args=None):
     fields will be processed.
     """
     sar_urls = get_sar(time=datetime.datetime.fromisoformat(args.time), dt=args.delta)
-    with open(args.processed, "r") as fp:
-        processed_urls = "; ".join(fp.readlines())
+    processed_urls = ""
+    if os.path.isfile(args.processed):
+        with open(args.processed, "r") as fp:
+            processed_urls = "; ".join(fp.readlines())
 
     for url in sar_urls:
         if url in processed_urls:
