@@ -138,7 +138,7 @@ def export_mmd(nc_file, target_path, base_url):
     pp = nc_file.split("/")
     url = os.path.join(base_url, pp[-4], pp[-3], pp[-2], pp[-1])
     target_fn = os.path.join(target_path, pp[-4], pp[-3], pp[-2], pp[-1])
-    md = Nc_to_mmd(nc_file, opendap_url=url, output_file=target_fn[:-2]+"xml",
+    md = Nc_to_mmd(nc_file, opendap_url=url, output_file=nc_file[:-2]+"xml",
                    target_nc_filename=target_fn)
     status, msg = md.to_mmd()
     return status, msg
