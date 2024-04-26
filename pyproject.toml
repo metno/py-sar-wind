@@ -3,5 +3,52 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = sarwind
+authors = [
+    {name = "Morten W. Hansen", email="mortenwh@met.no"},
+    # Frode..
+]
+description = Process wind speed from SAR and weather forecast wind directions
+readme = README.md
+requires-python = ">=3.8"
+license = {text = "Apache 2.0"}
+classifiers = [
+    Development Status :: 0 - Beta
+    Intended Audience :: Science/Research
+    License :: OSI Approved :: Apache Software License
+    Operating System :: OS Independent
+    Programming Language :: Python :: 3 :: Only
+    Programming Language :: Python :: 3.8
+    Programming Language :: Python :: Implementation :: CPython
+    Topic :: Scientific/Engineering
+]
+dependencies = [
+    netCDF4
+    numpy
+    Pillow
+    python-dateutil
+    PyYAML
+    requests
+    scipy
+    six
+    urllib3
+    xdg
+    owslib
+    py_mmd_tools@git+https://github.com/metno/py-mmd-tools.git
+    fadg@git+https://github.com/metno/esa-coscaw-data-search.git
+]
+dynamic = ["version"]
+
 [project.scripts]
 process_sar_wind = "sarwind.script.process_sar_wind:_main"
+
+[project.urls]
+source = "https://github.com/metno/met-sar-vind"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.pytest.ini_options]
+markers = ["sarwind: Basic tests for the sarwind module",
+           "without_nansat: Tests working without nansat and gdal"]
