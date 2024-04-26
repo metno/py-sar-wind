@@ -2,3 +2,6 @@
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project.scripts]
+process_sar_wind = "sarwind.script.process_sar_wind:_main"
