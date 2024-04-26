@@ -143,3 +143,56 @@ def fncDir(tmpDir):
 ##
 #  Objects
 ##
+class MockNansat:
+    """Mock of Nansat class
+    """
+    time_coverage_start = "2024-04-04T23:22:31+00:00"
+
+    def __init__(self, *a, **k):
+        return None
+
+    def set_metadata(self, *args, **kwargs):
+        return None
+    
+    def has_band(self, *args, **kwargs):
+        return None
+
+    def add_band(self, *args, **kwargs):
+        return None
+
+    def get_band_number(self, *args, **kwargs):
+        return None
+
+    def resize(self, *args, **kwargs):
+        return None
+
+    def reproject(self, *args, **kwargs):
+        return None
+
+    def get_metadata(self, *args, **kwargs):
+        return None
+
+    def __getitem__(self, *args, **kwargs):
+        return None
+
+class mocked_nansat:
+    """Mock of nansat module
+    """
+    Nansat = MockNansat
+
+@pytest.fixture(scope="function")
+def mock_nansat(monkeypatch):
+    """Mocks nansat module and Nansat class
+    """
+    # The following needs to be done is nansat is installed but the
+    # code is still incomplete
+    # monkeypatch.setattr("nansat.nansat.Nansat.__init__", lambda *a, **k: MockNansat())
+    # monkeypatch.setattr("nansat.Nansat.__init__", lambda *a, **k: MockNansat())
+    # monkeypatch.setattr("nansat.Nansat.set_metadata", lambda *a, **k: None)
+    # monkeypatch.setattr("nansat.Nansat.has_band", lambda *a, **k: None)
+    # monkeypatch.setattr("nansat.Nansat.get_band_number", lambda *a, **k: None)
+    # monkeypatch.setattr("nansat.Nansat.resize", lambda *a, **k: None)
+    # monkeypatch.setattr("nansat.Nansat.__get_item__", lambda *a, **k: None)
+    monkeypatch.setitem(sys.modules, "nansat", mocked_nansat())
+    monkeypatch.setitem(sys.modules, "nansat.nansat", mocked_nansat())
+    monkeypatch.setattr("sarwind.sarwind.Nansat", MockNansat)

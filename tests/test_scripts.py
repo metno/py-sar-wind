@@ -9,18 +9,24 @@ from argparse import ArgumentParser
 
 from py_mmd_tools.nc_to_mmd import Nc_to_mmd
 
-from sarwind.sarwind import SARWind
-from sarwind.script.process_sar_wind import main
-from sarwind.script.process_sar_wind import process
-from sarwind.script.process_sar_wind import create_parser
-from sarwind.script.process_sar_wind import process_with_meps
-from sarwind.script.process_sar_wind import process_with_arome
+nansat_installed = True
+try:
+    import nansat
+except ModuleNotFoundError:
+    nansat_installed = False
+else:
+    from sarwind.sarwind import SARWind
+    from sarwind.script.process_sar_wind import main
+    from sarwind.script.process_sar_wind import process
+    from sarwind.script.process_sar_wind import create_parser
+    from sarwind.script.process_sar_wind import process_with_meps
+    from sarwind.script.process_sar_wind import process_with_arome
 
 
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.sarwind
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
 def testProcess_sar_wind_process(monkeypatch, caplog):
     """Test function process in process_sar_wind.py
     """
@@ -45,7 +51,7 @@ def testProcess_sar_wind_process(monkeypatch, caplog):
         assert fn == "/path/to/out/2024/04/21/sar_url_ending.nc"
 
 
-@pytest.mark.sarwind
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
 def testProcess_sar_wind_process_with_meps(monkeypatch):
     """Test process_with_meps
     """
@@ -57,7 +63,7 @@ def testProcess_sar_wind_process_with_meps(monkeypatch):
         assert fn == fn_out
 
 
-@pytest.mark.sarwind
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
 def testProcess_sar_wind_process_with_arome(monkeypatch):
     """Test process_with_arome
     """
@@ -69,7 +75,7 @@ def testProcess_sar_wind_process_with_arome(monkeypatch):
         assert fn == fn_out
 
 
-@pytest.mark.sarwind
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
 def testProcess_sar_wind_create_parser(monkeypatch):
     """Test create_parser
     """
@@ -77,7 +83,7 @@ def testProcess_sar_wind_create_parser(monkeypatch):
     assert isinstance(p, ArgumentParser)
 
 
-@pytest.mark.sarwind
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
 def testProcess_sar_wind_main(monkeypatch, caplog):
     """Test main function of the process_sar_wind script.
     """

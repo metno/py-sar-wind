@@ -1,6 +1,6 @@
-from collocation.with_dataset import SearchCSW
-from collocation.with_dataset import AromeArctic
-from collocation.with_dataset import Meps
+from fadg.find_and_collocate import SearchCSW
+from fadg.find_and_collocate import AromeArctic
+from fadg.find_and_collocate import Meps
 
 
 def get_sar(time=None, dt=24, bbox=None, endpoint="https://nbs.csw.met.no/csw"):

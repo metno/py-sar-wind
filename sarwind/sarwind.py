@@ -171,20 +171,34 @@ class SARWind(Nansat, object):
         )
 
     def set_related_dataset(self, metadata, auxm):
+        """Set MMD metadata extension to ACDD. The use of this is
+        still unclear and may be changed.
+
+        See https://github.com/metno/mmd/issues/119
+        """
         related_dataset = ""
         if "id" in metadata.keys() and "naming_authority" in metadata.keys():
             related_dataset += "%s:%s (auxiliary)" % (metadata.get("naming_authority", ""),
                                                       metadata.get("id", ""))
+        elif "id" in metadata.keys() and "naming_authority" not in metadata.keys():
+            related_dataset += "%s (auxiliary)" % metadata.get("id", "")
+
+        if related_dataset != "":
+            related_dataset += ", "
+
         if "id" in auxm.keys() and "naming_authority" in auxm.keys():
             related_dataset += "%s:%s (auxiliary)" % (auxm.get("naming_authority", ""),
                                                       auxm.get("id", ""))
+        elif "id" in auxm.keys() and "naming_authority" not in auxm.keys():
+            related_dataset += "%s (auxiliary)" % auxm.get("id", "")
+
+        if related_dataset.endswith(", "):
+            related_dataset = related_dataset[:-2]
+
         if related_dataset != "":
-            self.set_metadata(
-                "related_dataset",
-                "%s:%s (auxiliary), %s:%s (auxiliary)" % (metadata.get("naming_authority", ""),
-                                                          metadata.get("id", ""),
-                                                          auxm.get("naming_authority", ""),
-                                                          auxm.get("id", "")))
+            self.set_metadata("related_dataset", related_dataset)
+
+        return related_dataset
 
     @staticmethod
     def get_model_wind_field(aux):

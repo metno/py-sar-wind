@@ -1,8 +1,8 @@
 import pytest
 
-from collocation.with_dataset import SearchCSW
-from collocation.with_dataset import AromeArctic
-from collocation.with_dataset import Meps
+from fadg.find_and_collocate import SearchCSW
+from fadg.find_and_collocate import AromeArctic
+from fadg.find_and_collocate import Meps
 
 from sarwind.search_and_collocate import get_sar
 from sarwind.search_and_collocate import collocate_with
