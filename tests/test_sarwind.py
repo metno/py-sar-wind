@@ -1,5 +1,4 @@
 import os
-import sys
 import pytest
 import tempfile
 
@@ -9,9 +8,10 @@ from unittest.mock import Mock
 
 nansat_installed = True
 try:
-    import nansat
+    import nansat  # noqa
 except ModuleNotFoundError:
     nansat_installed = False
+
 
 class SelectMock(Mock):
     pass
@@ -86,8 +86,8 @@ def testSARWind_get_model_wind_field(mock_nansat, arome, monkeypatch):
     with monkeypatch.context() as mp:
         smock = SelectMock()
         smock.side_effect = [
-            np.array([0, 0]),  # 
-            np.array([1, 1])   #
+            np.array([0, 0]),
+            np.array([1, 1])
         ]
         mp.setattr("sarwind.sarwind.Nansat.__getitem__", smock)
 
@@ -140,7 +140,7 @@ def testSARWind_set_related_dataset(mock_nansat, monkeypatch):
         auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c"}
         related_ds = w.set_related_dataset(metadata, auxm)
         assert related_ds == "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)"
-                            
+
         metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853"}
         auxm = {}
         related_ds = w.set_related_dataset(metadata, auxm)
@@ -253,7 +253,7 @@ def testSARWind_set_related_dataset_with_nansat(monkeypatch, meps_20240416, s1a_
         auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c"}
         related_ds = w.set_related_dataset(metadata, auxm)
         assert related_ds == "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)"
-                            
+
         metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853"}
         auxm = {}
         related_ds = w.set_related_dataset(metadata, auxm)
@@ -263,17 +263,6 @@ def testSARWind_set_related_dataset_with_nansat(monkeypatch, meps_20240416, s1a_
         auxm = {}
         related_ds = w.set_related_dataset(metadata, auxm)
         assert related_ds == ""
-
-
-
-
-    #reld = ("no.met:11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
-    #        "no.met:d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
-    #assert w.get_metadata("related_dataset") == reld
-    #with tempfile.NamedTemporaryFile(delete=True) as fp:
-    #    w.export(filename=fp.name)
-    #    assert os.path.isfile(fp.name)
-    #assert not os.path.isfile(fp.name)
 
 
 @pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")

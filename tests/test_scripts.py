@@ -11,7 +11,7 @@ from py_mmd_tools.nc_to_mmd import Nc_to_mmd
 
 nansat_installed = True
 try:
-    import nansat
+    import nansat  # noqa
 except ModuleNotFoundError:
     nansat_installed = False
 else:

@@ -153,7 +153,7 @@ class MockNansat:
 
     def set_metadata(self, *args, **kwargs):
         return None
-    
+
     def has_band(self, *args, **kwargs):
         return None
 
@@ -175,10 +175,12 @@ class MockNansat:
     def __getitem__(self, *args, **kwargs):
         return None
 
+
 class mocked_nansat:
     """Mock of nansat module
     """
     Nansat = MockNansat
+
 
 @pytest.fixture(scope="function")
 def mock_nansat(monkeypatch):
