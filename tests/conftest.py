@@ -186,7 +186,7 @@ class mocked_nansat:
 def mock_nansat(monkeypatch):
     """Mocks nansat module and Nansat class
     """
-    # The following needs to be done is nansat is installed but the
+    # The following needs to be done if nansat is installed but the
     # code is still incomplete
     # monkeypatch.setattr("nansat.nansat.Nansat.__init__", lambda *a, **k: MockNansat())
     # monkeypatch.setattr("nansat.Nansat.__init__", lambda *a, **k: MockNansat())
