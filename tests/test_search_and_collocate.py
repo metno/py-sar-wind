@@ -5,7 +5,7 @@ from fadg.find_and_collocate import AromeArctic
 from fadg.find_and_collocate import Meps
 
 from sarwind.search_and_collocate import get_sar
-from sarwind.search_and_collocate import collocate_with
+from sarwind.search_and_collocate import collocate
 
 
 @pytest.mark.sarwind
@@ -27,8 +27,8 @@ def test_get_sar(monkeypatch):
 
 
 @pytest.mark.sarwind
-def test_collocate_with(monkeypatch):
-    """Test function collocate_with.
+def test_collocate(monkeypatch):
+    """Test function collocate.
     """
     url = ("https://nbstds.met.no/thredds/dodsC/NBS/S1A/2024/04/21/"
            "IW/S1A_IW_GRDM_1SDV_20240421T155133_20240421T155200_053534_067F5F_06E5.nc")
@@ -41,6 +41,6 @@ def test_collocate_with(monkeypatch):
         mp.setattr(Meps, "get_odap_url_of_nearest", lambda *a, **k: meps)
         mp.setattr(AromeArctic, "__init__", lambda *a, **k: None)
         mp.setattr(AromeArctic, "get_odap_url_of_nearest", lambda *a, **k: arome)
-        m, a = collocate_with(url)
+        m, a = collocate(url)
         assert m == meps
         assert a == arome

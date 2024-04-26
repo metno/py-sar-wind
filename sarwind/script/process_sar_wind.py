@@ -37,7 +37,7 @@ from pytz import timezone
 from py_mmd_tools.nc_to_mmd import Nc_to_mmd
 
 from sarwind.search_and_collocate import get_sar
-from sarwind.search_and_collocate import collocate_with
+from sarwind.search_and_collocate import collocate
 
 from sarwind.sarwind import SARWind
 
@@ -160,7 +160,7 @@ def main(args=None):
         if url in processed_urls:
             logging.debug("Already processed: %s" % url)
             continue
-        meps, arome = collocate_with(url)
+        meps, arome = collocate(url)
         if meps is not None:
             fnm = process_with_meps(url, meps, args.output_path)
         if arome is not None:

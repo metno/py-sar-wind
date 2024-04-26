@@ -33,7 +33,7 @@ def get_sar(time=None, dt=24, bbox=None, endpoint="https://nbs.csw.met.no/csw"):
     return urls
 
 
-def collocate_with(url, endpoint="https://data.csw.met.no"):
+def collocate(url, endpoint="https://data.csw.met.no"):
     """Given an OPeNDAP url to a dataset, find collocated Arome-Arctic
     and MEPS weather forecasts.
 

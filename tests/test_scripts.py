@@ -106,7 +106,7 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
     with monkeypatch.context() as mp:
         mp.setattr("sarwind.script.process_sar_wind.get_sar",
                    lambda *a, **k: sar_urls)
-        mp.setattr("sarwind.script.process_sar_wind.collocate_with",
+        mp.setattr("sarwind.script.process_sar_wind.collocate",
                    lambda *a, **k: (meps, arome))
         mp.setattr("sarwind.script.process_sar_wind.process_with_meps",
                    lambda *a, **k: out_fn_meps)
