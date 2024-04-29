@@ -9,8 +9,6 @@ from argparse import ArgumentParser
 
 from py_mmd_tools.nc_to_mmd import Nc_to_mmd
 
-from sarwind.script.process_sar_wind import export_mmd
-
 nansat_installed = True
 try:
     import nansat  # noqa
@@ -83,9 +81,10 @@ def testProcess_sar_wind_create_parser(monkeypatch):
 
 
 @pytest.mark.without_nansat
-def testProcess_sar_wind_export_mmd(monkeypatch):
+def testProcess_sar_wind_export_mmd(monkeypatch, mock_nansat):
     """Test function for exporting to MMD.
     """
+    from sarwind.script.process_sar_wind import export_mmd
     nc_file0 = "2024/04/28/fake.nc"
     expected_mmd_fn0 = "./mmd/2024/04/28/fake.xml"
     nc_file1 = "/some/random/folder/2024/04/28/fake.nc"
