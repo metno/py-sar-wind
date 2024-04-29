@@ -9,6 +9,8 @@ from argparse import ArgumentParser
 
 from py_mmd_tools.nc_to_mmd import Nc_to_mmd
 
+from sarwind.script.process_sar_wind import export_mmd
+
 nansat_installed = True
 try:
     import nansat  # noqa
@@ -21,8 +23,6 @@ else:
     from sarwind.script.process_sar_wind import create_parser
     from sarwind.script.process_sar_wind import process_with_meps
     from sarwind.script.process_sar_wind import process_with_arome
-
-from sarwind.script.process_sar_wind import export_mmd
 
 
 @pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
