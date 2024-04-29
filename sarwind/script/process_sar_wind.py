@@ -54,7 +54,7 @@ def create_parser():
         help="Central time of SAR data search (ISO format)."
     )
     parser.add_argument(
-        "-d", "--delta", type=str, default=24,
+        "-d", "--delta", type=int, default=24,
         help="Search interval in hours before and after the central "
              "time."
     )
@@ -62,10 +62,6 @@ def create_parser():
         "-o", "--output_path", type=str, default=".",
         help="Output path of resulting CF-NetCDF file (default is the"
              " current directory)."
-    )
-    parser.add_argument(
-        "-p", "--processed", type=str, default="processed_urls.txt",
-        help="Text file with list of processed datasets."
     )
     parser.add_argument(
         "--export_mmd", action="store_true",
@@ -80,6 +76,22 @@ def create_parser():
     parser.add_argument(
         "--odap_target_url", type=str, default=None,
         help="Root folder of the OPeNDAP target url."
+    )
+    # parser.add_argument(
+    #     "--log_level", type=str, default=logging.DEBUG
+    #     help="Log level (default DEBUG)."
+    # )
+    parser.add_argument(
+        "--processed_files", type=str, default="processed.txt",
+        help="List of processed datasets."
+    )
+    parser.add_argument(
+        "--log_to_file", action="store_true",
+        help="Log to file instead of the console."
+    )
+    parser.add_argument(
+        "--log_file", type=str, default="process-sar-wind.log",
+        help="Log file name."
     )
 
     return parser
@@ -138,10 +150,17 @@ def export_mmd(nc_file, target_path, base_url):
     pp = nc_file.split("/")
     url = os.path.join(base_url, pp[-4], pp[-3], pp[-2], pp[-1])
     target_fn = os.path.join(target_path, pp[-4], pp[-3], pp[-2], pp[-1])
-    md = Nc_to_mmd(nc_file, opendap_url=url, output_file=nc_file[:-2]+"xml",
+    if len(pp) > 4:
+        folder = "/".join(pp[:-4])
+    else:
+        folder = "."
+    xml_out = os.path.join(folder, "mmd", pp[-4], pp[-3], pp[-2], pp[-1][:-2]+"xml")
+    pp = Path(os.path.dirname(xml_out))
+    pp.mkdir(exist_ok=True, parents=True)
+    md = Nc_to_mmd(nc_file, opendap_url=url, output_file=xml_out,
                    target_nc_filename=target_fn)
     status, msg = md.to_mmd()
-    return status, msg
+    return status, xml_out
 
 
 def main(args=None):
@@ -150,15 +169,28 @@ def main(args=None):
     If a SAR image overlaps with both model domains, two SAR wind
     fields will be processed.
     """
-    sar_urls = get_sar(time=datetime.datetime.fromisoformat(args.time), dt=args.delta)
+    if args.log_to_file:
+        logging.basicConfig(filename=args.log_file, level=logging.INFO)
+
+    sar_urls0 = get_sar(time=datetime.datetime.fromisoformat(args.time), dt=args.delta)
     processed_urls = ""
-    if os.path.isfile(args.processed):
-        with open(args.processed, "r") as fp:
-            processed_urls = "; ".join(fp.readlines())
+    if os.path.isfile(args.processed_files):
+        with open(args.processed_files, "r") as fp:
+            lines = fp.readlines()
+        for line in lines:
+            if "Processed" in line:
+                processed_urls = "; ".join([processed_urls, line])
+
+    count = 0
+    # Avoid duplicate processing
+    sar_urls = []
+    for url in sar_urls0:
+        if url not in sar_urls:
+            sar_urls.append(url)
 
     for url in sar_urls:
         if url in processed_urls:
-            logging.debug("Already processed: %s" % url)
+            logging.info("Already processed: %s" % url)
             continue
         meps, arome = collocate(url)
         if meps is not None:
@@ -166,17 +198,19 @@ def main(args=None):
         if arome is not None:
             fna = process_with_arome(url, arome, args.output_path)
         if fnm is not None:
-            logging.info("Processed %s.\n" % fnm)
+            logging.info("Processed %s:%s" % (url, fnm))
             if args.export_mmd:
                 statusm, msgm = export_mmd(fnm, args.nc_target_path, args.odap_target_url)
-            with open(args.processed, "a") as fp:
-                fp.write("%s, %s: %s\n\n" % (url, meps, fnm))
+            with open(args.processed_files, "a") as fp:
+                fp.write("Processed %s and %s: %s\n\n" % (url, meps, fnm))
         if fna is not None:
-            logging.info("Processed %s.\n" % fna)
+            logging.info("Processed %s:%s" % (url, fna))
             if args.export_mmd:
                 statusa, msga = export_mmd(fna, args.nc_target_path, args.odap_target_url)
-            with open(args.processed, "a") as fp:
-                fp.write("%s, %s: %s\n\n" % (url, arome, fna))
+            with open(args.processed_files, "a") as fp:
+                fp.write("Processed %s and %s: %s\n\n" % (url, arome, fna))
+        count += 1
+        logging.info("%d/%d done" % (count, len(sar_urls)))
 
 
 def _main():  # pragma: no cover

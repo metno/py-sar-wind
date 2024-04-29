@@ -22,8 +22,7 @@ else:
     from sarwind.script.process_sar_wind import process_with_meps
     from sarwind.script.process_sar_wind import process_with_arome
 
-
-logger = logging.getLogger(__name__)
+from sarwind.script.process_sar_wind import export_mmd
 
 
 @pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
@@ -83,12 +82,31 @@ def testProcess_sar_wind_create_parser(monkeypatch):
     assert isinstance(p, ArgumentParser)
 
 
+@pytest.mark.without_nansat
+def testProcess_sar_wind_export_mmd(monkeypatch):
+    """Test function for exporting to MMD.
+    """
+    nc_file0 = "2024/04/28/fake.nc"
+    expected_mmd_fn0 = "./mmd/2024/04/28/fake.xml"
+    nc_file1 = "/some/random/folder/2024/04/28/fake.nc"
+    expected_mmd_fn1 = "/some/random/folder/mmd/2024/04/28/fake.xml"
+    base_url = "https://thredds.met.no/thredds/dodsC/sarwind"
+    with monkeypatch.context() as mp:
+        mp.setattr(Nc_to_mmd, "__init__", lambda *a, **k: None)
+        mp.setattr(Nc_to_mmd, "to_mmd", lambda *a, **k: (True, expected_mmd_fn0))
+        status, msg = export_mmd(nc_file0, os.path.join("/lustre/path/", nc_file0), base_url)
+        assert msg == expected_mmd_fn0
+        mp.setattr(Nc_to_mmd, "to_mmd", lambda *a, **k: (True, expected_mmd_fn1))
+        status, msg = export_mmd(nc_file1, os.path.join("/lustre/path/", nc_file1), base_url)
+        assert msg == expected_mmd_fn1
+
+
 @pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
 def testProcess_sar_wind_main(monkeypatch, caplog):
     """Test main function of the process_sar_wind script.
     """
-    caplog.set_level(logging.DEBUG)
-    sar_urls = ["/path/to/sar/fn.nc", "/path/to/sar/fn.nc"]
+    caplog.set_level(logging.INFO)
+    sar_urls = ["/path/to/sar/fn.nc", "/path/to/sar/fn.nc", "/path/to/sar/fn2.nc"]
     meps = "https://opendap.url.no/of/a/meps/dataset.nc"
     arome = "https://opendap.url.no/of/a/arome/dataset.nc"
     out_fn_meps = "./2024/03/23/sar_meps_wind.nc"
@@ -103,6 +121,7 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
     args.export_mmd = True
     args.nc_target_path = "/path/to/target/file.nc"
     args.odap_target_url = "https://thredds.met.no/thredds/dodsC/sarwind"
+    args.log_to_file = False
     with monkeypatch.context() as mp:
         mp.setattr("sarwind.script.process_sar_wind.get_sar",
                    lambda *a, **k: sar_urls)
@@ -118,12 +137,21 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
         # NOTE: the file is opened in binary mode, so the text will be
         #       byte-like in this case.
         with tempfile.NamedTemporaryFile(delete=True) as fp:
-            args.processed = fp.name
+            args.processed_files = fp.name
             main(args)
             assert os.path.isfile(fp.name)
             lines = fp.readlines()
-            assert b"/path/to/sar/fn.nc" in lines[0]
-            assert b"/path/to/sar/fn.nc" in lines[2]
+            assert "./2024/03/23/sar_meps_wind.nc" in str(lines[0])
+            assert "./2024/03/23/sar_arome_wind.nc" in str(lines[2])
             main(args)
             assert "Already processed" in caplog.text
+            for handler in logging.root.handlers[:]:
+                logging.root.removeHandler(handler)
+            args.log_to_file = True
+            args.log_file = fp.name
+            main(args)
+            lines = fp.readlines()
+            assert "Already processed" in str(lines[0])
+            assert "Already processed" in str(lines[1])
+
         assert not os.path.isfile(fp.name)
