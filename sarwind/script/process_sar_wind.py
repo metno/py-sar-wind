@@ -68,6 +68,10 @@ def create_parser():
         help="Toggle whether to export metadata to MMD files."
     )
     parser.add_argument(
+        "--parent_mmd", type=str, default=None,
+        help="Metadata ID of parent dataset."
+    )
+    parser.add_argument(
         "--nc_target_path", type=str, default=".",
         help="Target path for the CF-NetCDF files if they need to be "
              "moved to another storage place than the given output "
@@ -131,7 +135,7 @@ def process_with_arome(url, arome, path):
     return process(url, arome, path, "_AROMEARCTIC.nc")
 
 
-def export_mmd(nc_file, target_path, base_url):
+def export_mmd(nc_file, target_path, base_url, parent_mmd=None):
     """Export metadata to MMD.
 
     Input
@@ -159,7 +163,7 @@ def export_mmd(nc_file, target_path, base_url):
     pp.mkdir(exist_ok=True, parents=True)
     md = Nc_to_mmd(nc_file, opendap_url=url, output_file=xml_out,
                    target_nc_filename=target_fn)
-    status, msg = md.to_mmd()
+    status, msg = md.to_mmd(parent=parent_mmd)
     return status, xml_out
 
 
@@ -200,13 +204,15 @@ def main(args=None):
         if fnm is not None:
             logging.info("Processed %s:%s" % (url, fnm))
             if args.export_mmd:
-                statusm, msgm = export_mmd(fnm, args.nc_target_path, args.odap_target_url)
+                statusm, msgm = export_mmd(fnm, args.nc_target_path, args.odap_target_url,
+                                           parent_mmd=args.parent_mmd)
             with open(args.processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, meps, fnm))
         if fna is not None:
             logging.info("Processed %s:%s" % (url, fna))
             if args.export_mmd:
-                statusa, msga = export_mmd(fna, args.nc_target_path, args.odap_target_url)
+                statusa, msga = export_mmd(fna, args.nc_target_path, args.odap_target_url,
+                                           parent_mmd=args.parent_mmd)
             with open(args.processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, arome, fna))
         count += 1

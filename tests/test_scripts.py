@@ -122,6 +122,7 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
     args.nc_target_path = "/path/to/target/file.nc"
     args.odap_target_url = "https://thredds.met.no/thredds/dodsC/sarwind"
     args.log_to_file = False
+    args.parent_mmd = None
     with monkeypatch.context() as mp:
         mp.setattr("sarwind.script.process_sar_wind.get_sar",
                    lambda *a, **k: sar_urls)

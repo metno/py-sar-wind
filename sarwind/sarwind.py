@@ -307,7 +307,7 @@ class SARWind(Nansat, object):
         metadata["geospatial_lat_min"] = "%.2f" % lat.min()
         metadata["geospatial_lon_max"] = "%.2f" % lon.max()
         metadata["geospatial_lon_min"] = "%.2f" % lon.min()
-        metadata["license"] = "https://spdx.org/licenses/CC-BY-4.0.html (CC-BY-4.0)"
+        metadata["license"] = "https://spdx.org/licenses/CC-BY-4.0 (CC-BY-4.0)"
         metadata["keywords"] = (
             "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > SURFACE WINDS > WIND SPEED, "
             "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > WIND STRESS, "
