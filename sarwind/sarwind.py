@@ -101,33 +101,50 @@ class SARWind(Nansat, object):
                              "datasets overlap in the geospatial "
                              "domain.")
 
-        # We should also get the correct time but this is a bit
-        # tricky and requires customization of nansat..
-
         # Get wind speed and direction
-        model_wind_speed, wind_from = self.get_model_wind_field(aux)
+        model_wind_speed, wind_from, time = self.get_model_wind_field(aux)
 
         # Add longitude and latitude as bands
         lon, lat = self.get_geolocation_grids()
         self.add_band(
             array=lon,
-            parameters={"wkv": "longitude", "name": "longitude", "units": "degree_east"})
+            parameters={
+                "wkv": "longitude",
+                "name": "longitude",
+                "units": "degree_east",
+            })
         self.add_band(
             array=lat,
-            parameters={"wkv": "latitude", "name": "latitude", "units": "degree_north"})
+            parameters={
+                "wkv": "latitude",
+                "name": "latitude",
+                "units": "degree_north"
+            })
 
         # Store model wind direction
         self.add_band(
             array=wind_from,
-            parameters={"wkv": "wind_from_direction", "name": "wind_from_direction"})
-        # , "time": wdir_time})
+            parameters={
+                "wkv": "wind_from_direction",
+                "name": "wind_direction",
+                "short_name": "Wind direction",
+                "long_name": "Model wind direction",
+                "time": time,
+            }
+        )
 
         # Store model wind speed
         self.add_band(
             array=model_wind_speed,
             nomem=True,
-            parameters={"wkv": "wind_speed", "name": "model_windspeed"})
-        # , "time": wdir_time})
+            parameters={
+                "wkv": "wind_speed",
+                "name": "model_windspeed",
+                "short_name": "Wind speed",
+                "long_name": "Model wind speed",
+                "time": time,
+            }
+        )
 
         logging.info("Calculating SAR wind with CMOD...")
 
@@ -148,20 +165,37 @@ class SARWind(Nansat, object):
         # Mask land
         windspeed[topo[1] > 0] = np.nan
 
+        t0 = datetime.datetime.fromisoformat(self.get_metadata("time_coverage_start"))
+        t1 = datetime.datetime.fromisoformat(self.get_metadata("time_coverage_end"))
+        sar_mean_time = t0 + (t1 - t0)/2
+        if sar_mean_time.tzinfo is None:
+                sar_mean_time = pytz.utc.localize(sar_mean_time)
+
         # Add wind speed and direction as bands
-        # wind_direction_time = self.get_metadata(key="time", band_id="wind_from_direction")
         self.add_band(
             array=windspeed,
             parameters={
                 "wkv": "wind_speed",
                 "name": "windspeed",
-                # "wind_direction_time": wind_direction_time
+                "long_name": "CMOD5n wind speed",
+                "short_name": "Wind speed",
+                "time": sar_mean_time.isoformat(),
             })
 
         u = -windspeed*np.sin(wind_from * np.pi / 180.0)
         v = -windspeed*np.cos(wind_from * np.pi / 180.0)
-        self.add_band(array=u, parameters={"wkv": "eastward_wind"})
-        self.add_band(array=v, parameters={"wkv": "northward_wind"})
+        self.add_band(
+            array=u,
+            parameters={
+                "wkv": "eastward_wind",
+                "time": sar_mean_time.isoformat(),
+            })
+        self.add_band(
+            array=v,
+            parameters={
+                "wkv": "northward_wind",
+                "time": sar_mean_time.isoformat(),
+            })
 
         # set winddir_time to global metadata
         # self.set_metadata("winddir_time", str(wind_direction_time))
@@ -224,17 +258,18 @@ class SARWind(Nansat, object):
         except ValueError:
             calc_wind_from = True
         else:
-            speed_band_no = aux.get_band_number({"standard_name": "wind_speed"})
+            time = aux.get_metadata(band_id=dir_from_band_no, key="time")
             wind_from = aux[dir_from_band_no]
+            speed_band_no = aux.get_band_number({"standard_name": "wind_speed"})
             model_wind_speed = aux[speed_band_no]
 
         if calc_wind_from:
             title = aux.get_metadata("title")
             # Custom functions are needed here..
             if "arome" in title.lower():
-                model_wind_speed, wind_from = SARWind.get_arome_arctic_wind(aux)
+                model_wind_speed, wind_from, time = SARWind.get_arome_arctic_wind(aux)
 
-        return model_wind_speed, wind_from
+        return model_wind_speed, wind_from, time
 
     @staticmethod
     def get_arome_arctic_wind(aux):
@@ -245,9 +280,10 @@ class SARWind(Nansat, object):
         assert aux.get_metadata("long_name", "y_wind_10m") == "Meridional 10 metre wind (V10M)"
         u = aux["x_wind_10m"]
         v = aux["y_wind_10m"]
+        time = aux.get_metadata(band_id="x_wind_10m", key="time")
         speed = np.sqrt(np.square(u) + np.square(v))
         dir = SARWind.calculate_wind_from_direction(u, v)
-        return speed, dir
+        return speed, dir, time
 
     @staticmethod
     def calculate_wind_from_direction(u, v):
@@ -269,12 +305,9 @@ class SARWind(Nansat, object):
             bands = [
                 self.get_band_number("longitude"),
                 self.get_band_number("latitude"),
-                self.get_band_number("wind_from_direction"),
+                self.get_band_number("wind_direction"),
                 self.get_band_number("windspeed"),
                 self.get_band_number("model_windspeed"),
-                # TODO: use standard names:
-                self.get_band_number("U"),
-                self.get_band_number("V"),
             ]
 
         # Get image boundary
@@ -379,4 +412,10 @@ class SARWind(Nansat, object):
         for att in nc_ds.ncattrs():
             nc_ds.delncattr(att)
         nc_ds.setncatts(metadata)
+        # Clean variable metadata
+        md_rm = ["colormap", "minmax", "dataType", "SourceBand", "SourceFilename", "wkv"]
+        for key in nc_ds.variables.keys():
+            for md_key in md_rm:
+                if md_key in nc_ds[key].ncattrs():
+                    nc_ds[key].delncattr(md_key)
         nc_ds.close()

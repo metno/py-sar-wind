@@ -93,7 +93,7 @@ def testSARWind_get_model_wind_field(mock_nansat, arome, monkeypatch):
 
         aux = Nansat(arome)
 
-        speed, dir = SARWind.get_model_wind_field(aux)
+        speed, dir, time = SARWind.get_model_wind_field(aux)
 
         assert not np.isnan(speed).all()
         assert not np.isnan(dir).all()
@@ -207,7 +207,7 @@ def testSARWind_get_model_wind_field_with_nansat(arome):
     from sarwind.sarwind import SARWind
     from sarwind.sarwind import Nansat
     aux = Nansat(arome)
-    speed, dir = SARWind.get_model_wind_field(aux)
+    speed, dir, time = SARWind.get_model_wind_field(aux)
     assert not np.isnan(speed).all()
     assert not np.isnan(dir).all()
 
