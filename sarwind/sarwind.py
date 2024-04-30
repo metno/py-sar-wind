@@ -165,11 +165,12 @@ class SARWind(Nansat, object):
         # Mask land
         windspeed[topo[1] > 0] = np.nan
 
+        # Calculate mean time of the SAR NRCS grid
         t0 = datetime.datetime.fromisoformat(self.get_metadata("time_coverage_start"))
         t1 = datetime.datetime.fromisoformat(self.get_metadata("time_coverage_end"))
         sar_mean_time = t0 + (t1 - t0)/2
         if sar_mean_time.tzinfo is None:
-                sar_mean_time = pytz.utc.localize(sar_mean_time)
+            sar_mean_time = pytz.utc.localize(sar_mean_time)
 
         # Add wind speed and direction as bands
         self.add_band(
