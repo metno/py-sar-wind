@@ -107,6 +107,15 @@ class SARWind(Nansat, object):
         # Get wind speed and direction
         model_wind_speed, wind_from = self.get_model_wind_field(aux)
 
+        # Add longitude and latitude as bands
+        lon, lat = self.get_geolocation_grids()
+        self.add_band(
+            array=lon,
+            parameters={"wkv": "longitude", "name": "longitude", "units": "degree_east"})
+        self.add_band(
+            array=lat,
+            parameters={"wkv": "latitude", "name": "latitude", "units": "degree_north"})
+
         # Store model wind direction
         self.add_band(
             array=wind_from,
@@ -257,12 +266,16 @@ class SARWind(Nansat, object):
 
         bands = kwargs.pop("bands", None)
         if bands is None:
-            bands = [self.get_band_number("wind_from_direction"),
-                     self.get_band_number("windspeed"),
-                     self.get_band_number("model_windspeed"),
-                     # TODO: use standard names:
-                     self.get_band_number("U"),
-                     self.get_band_number("V"),]
+            bands = [
+                self.get_band_number("longitude"),
+                self.get_band_number("latitude"),
+                self.get_band_number("wind_from_direction"),
+                self.get_band_number("windspeed"),
+                self.get_band_number("model_windspeed"),
+                # TODO: use standard names:
+                self.get_band_number("U"),
+                self.get_band_number("V"),
+            ]
 
         # Get image boundary
         lon, lat = self.get_border()
@@ -272,9 +285,9 @@ class SARWind(Nansat, object):
         boundary = boundary[:-2]+"))"
 
         # Export with Nansat
-        super().export(bands=bands, *args, **kwargs)
+        super().export(bands=bands, add_geolocation=False, add_gcps=False, *args, **kwargs)
 
-        # TODO: Move below code to broker/config
+        # TODO: Move below code out of the application
         ####
 
         # Get metadata
