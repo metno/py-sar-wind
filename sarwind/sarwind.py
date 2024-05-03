@@ -223,8 +223,8 @@ class SARWind(Nansat, object):
 
         # Update metadata
         metadata = self.get_metadata()
-        auxm = aux.get_metadata()
         # When https://github.com/metno/mmd/issues/119 is resolved, update and uncomment:
+        # auxm = aux.get_metadata()
         # self.set_related_dataset(metadata, auxm)
 
         history = metadata.get("history", "")
@@ -349,6 +349,15 @@ class SARWind(Nansat, object):
         # Get metadata
         old_metadata = self.get_metadata()
 
+        t0 = datetime.datetime.fromisoformat(
+            old_metadata["time_coverage_start"].replace("Z", "+00:00")
+        ).replace(tzinfo=pytz.timezone("utc"))
+        t0iso = t0.isoformat()
+        t1 = datetime.datetime.fromisoformat(
+            old_metadata["time_coverage_end"].replace("Z", "+00:00")
+        ).replace(tzinfo=pytz.timezone("utc"))
+        t1iso = t1.isoformat()
+
         sar_filename = old_metadata["sar_filename"].split("/")[-1]
         platforms = {
             "S1A": ["Sentinel-1A", "SAR-C"],
@@ -365,18 +374,23 @@ class SARWind(Nansat, object):
         metadata["naming_authority"] = "no.met"
         metadata["date_created"] = datetime.datetime.utcnow().replace(
             tzinfo=pytz.timezone("utc")).isoformat()
-        metadata["title"] = ("Surface wind at 10 m height estimated from %s NRCS, "
+        metadata["title"] = ("Surface wind (10 m above sea level) estimated from %s NRCS, "
                              "acquired on %s") % (
-                                platforms[sar_filename[:3]][0],
-                                datetime.datetime.fromisoformat(
-                                    old_metadata["time_coverage_start"].replace("Z", "+00:00")))
-        metadata["summary"] = ("Surface wind speed at 10 m height calculated from C-band Synthetic"
-                               " Aperture Radar (SAR) Normalized Radar Cross Section (NRCS)"
-                               " and model forecast wind, using CMOD5n. The wind speed is "
+            platforms[sar_filename[:3]][0], t0.strftime("%Y-%m-%d %H:%M:%S UTC"))
+        metadata["title_no"] = "Overflatevind (10 moh) utledet fra %s NRCS %s" % (
+            platforms[sar_filename[:3]][0],
+            t0.strftime("%Y-%m-%d %H:%M:%S UTC"))
+        metadata["summary"] = ("Surface wind speed (10 m above sea level) calculated from C-band "
+                               "Synthetic Aperture Radar (SAR) Normalized Radar Cross Section "
+                               "(NRCS) and model forecast wind, using CMOD5n. The wind speed is "
                                "calculated for neutrally stable conditions and is "
                                "equivalent to the wind stress.")
-        metadata["time_coverage_start"] = datetime.datetime.fromisoformat(
-            old_metadata["time_coverage_start"].replace("Z", "+00:00")).isoformat()
+        metadata["summary_no"] = ("Overflatevind (10 moh) beregnet fra SAR C-bånd "
+                                  "tilbakespredning og vindretning fra varslingsmodell, ved "
+                                  "bruk av CMOD5n. Vindhastigheten er beregnet under antagelse av"
+                                  " nøytral atmosfærestabilitet, og er representativ for "
+                                  "vindstress.")
+        metadata["time_coverage_start"] = t0iso
         metadata["geospatial_lat_max"] = "%.2f" % lat.max()
         metadata["geospatial_lat_min"] = "%.2f" % lat.min()
         metadata["geospatial_lon_max"] = "%.2f" % lon.max()
@@ -395,8 +409,7 @@ class SARWind(Nansat, object):
 
         metadata["publisher_type"] = "institution"
         metadata["publisher_email"] = "data-management-group@met.no"
-        metadata["time_coverage_end"] = datetime.datetime.fromisoformat(
-            old_metadata["time_coverage_end"].replace("Z", "+00:00")).isoformat()
+        metadata["time_coverage_end"] = t1iso
         metadata["geospatial_bounds"] = boundary
         metadata["processing_level"] = "Operational"
         metadata["contributor_role"] = "Technical contact"
@@ -418,12 +431,6 @@ class SARWind(Nansat, object):
         metadata["publisher_name"] = "Norwegian Meteorological Institute"
 
         metadata["spatial_representation"] = "grid"
-        metadata["title_no"] = "Overflate vind (10m) utledet fra %s NRCS" % sar_filename
-        metadata["summary_no"] = ("Vindstyrke beregnet fra SAR C-bånd tilbakespredning og "
-                                  "vindretning fra varslingsmodell, ved bruk av CMOD5n. "
-                                  "Vindstyrken er beregnet under antagelse av nøytral "
-                                  "atmosfærestabilitet, og er representativ for "
-                                  "vindstress.")
         metadata["dataset_production_status"] = "Complete"
         metadata["access_constraint"] = "Open"
         metadata["contributor_email"] = "froded@met.no"

@@ -5,13 +5,14 @@ import numpy as np
 from nansat.exceptions import WrongMapperError
 from nansat.vrt import VRT
 
+
 class Mapper(VRT):
 
     def __init__(self, filename, gdal_dataset, metadata, *args, **kwargs):
 
         try:
             ds = netCDF4.Dataset(filename)
-        except:
+        except OSError:
             raise WrongMapperError
         if "title" not in ds.ncattrs():
             raise WrongMapperError
@@ -22,12 +23,9 @@ class Mapper(VRT):
         latitude = ds['latitude'][:].data
         for attr in ds.ncattrs():
             content = ds.getncattr(attr)
-            #if isinstance(content, str):
-            #    content = content.replace("æ", "ae").replace("ø", "oe").replace("å", "aa")
-            #    content = content.replace("Æ", "Ae").replace("Ø", "Oe").replace("Å", "Aa")
             metadata[attr] = content
         super(Mapper, self)._init_from_lonlat(longitude, latitude)
-        
+
         # Get rid of GDAL additions to metadata keys
         metadata = VRT._remove_strings_in_metadata_keys(metadata, ['NC_GLOBAL#', 'GDAL_'])
         self.dataset.SetMetadata(metadata)
@@ -38,7 +36,7 @@ class Mapper(VRT):
             "windspeed": VRT.from_array(ds["windspeed"][:].filled(fill_value=np.nan)),
             "model_windspeed": VRT.from_array(ds["model_windspeed"][:].filled(fill_value=np.nan)),
         }
-        
+
         metaDict = []
 
         wdir_metadict = {}
@@ -51,7 +49,7 @@ class Mapper(VRT):
             },
             'dst': wdir_metadict,
         })
- 
+
         lookrel_metadict = {}
         for attr in ds["look_relative_wind_direction"].ncattrs():
             lookrel_metadict[attr] = ds["look_relative_wind_direction"].getncattr(attr)
@@ -62,7 +60,7 @@ class Mapper(VRT):
             },
             'dst': lookrel_metadict,
         })
- 
+
         wspeed_metadict = {}
         for attr in ds["windspeed"].ncattrs():
             wspeed_metadict[attr] = ds["windspeed"].getncattr(attr)
@@ -73,7 +71,7 @@ class Mapper(VRT):
             },
             'dst': wspeed_metadict,
         })
- 
+
         mwspeed_metadict = {}
         for attr in ds["model_windspeed"].ncattrs():
             mwspeed_metadict[attr] = ds["model_windspeed"].getncattr(attr)
@@ -84,7 +82,7 @@ class Mapper(VRT):
             },
             'dst': mwspeed_metadict,
         })
- 
+
         self.create_bands(metaDict)
 
         self.fix_global_metadata

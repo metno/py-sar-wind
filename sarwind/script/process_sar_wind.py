@@ -36,10 +36,9 @@ from pytz import timezone
 
 from py_mmd_tools.nc_to_mmd import Nc_to_mmd
 
+from sarwind.sarwind import SARWind
 from sarwind.search_and_collocate import get_sar
 from sarwind.search_and_collocate import collocate
-
-from sarwind.sarwind import SARWind
 
 
 def create_parser():
@@ -114,7 +113,8 @@ def process(url, model, output_path, fn_ending):
                       "%s" % (url, model, str(ee)))
     else:
         basename = os.path.basename(w.filename).split(".")[0]
-        time = datetime.datetime.fromisoformat(w.get_metadata("time_coverage_start"))
+        time = datetime.datetime.fromisoformat(
+            w.get_metadata("time_coverage_start").replace("Z", "+00:00"))
         year = f"{time.year:04d}"
         month = f"{time.month:02d}"
         day = f"{time.day:02d}"
@@ -166,6 +166,7 @@ def export_mmd(nc_file, target_path, base_url, parent_mmd=None):
     md = Nc_to_mmd(nc_file, opendap_url=url, output_file=xml_out,
                    target_nc_filename=target_fn)
     status, msg = md.to_mmd(parent=parent_mmd)
+
     return status, xml_out
 
 

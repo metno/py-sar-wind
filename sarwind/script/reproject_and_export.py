@@ -14,6 +14,7 @@ met-sar-vind is licensed under the Apache License 2.0
 import os
 import pytz
 import uuid
+import logging
 import netCDF4
 import datetime
 import argparse
@@ -23,6 +24,9 @@ import numpy as np
 from pathlib import Path
 
 from nansat.nansat import Nansat
+
+from sarwind.script.process_sar_wind import export_mmd
+
 
 def create_parser():
     parser = argparse.ArgumentParser(
@@ -37,6 +41,21 @@ def create_parser():
         help="Output path of resulting CF-NetCDF file (default is the"
              " current directory)."
     )
+    parser.add_argument(
+        "--parent_mmd", type=str, default=None,
+        help="Metadata ID of parent dataset."
+    )
+    parser.add_argument(
+        "--nc_target_path", type=str, default=".",
+        help="Target path for the CF-NetCDF files if they need to be "
+             "moved to another storage place than the given output "
+             "path (default is the current directory)."
+    )
+    parser.add_argument(
+        "--odap_target_url", type=str, default=None,
+        help="Root folder of the OPeNDAP target url."
+    )
+
     return parser
 
 
@@ -52,7 +71,9 @@ def main(args=None):
 
     metadata = n.get_metadata()
     title = n.get_metadata("title")
+    title_no = n.get_metadata("title_no")
     summary = n.get_metadata("summary")
+    summary_no = n.get_metadata("summary_no")
     history = n.get_metadata("history")
     tstart = n.get_metadata("time_coverage_start")
 
@@ -70,7 +91,10 @@ def main(args=None):
     pp = Path(os.path.join(args.output_path, year, month, day))
     pp.mkdir(exist_ok=True, parents=True)
     filename = os.path.join(args.output_path, year, month, day,
-        "reprojected_" + os.path.basename(args.sarwind))
+                            "reprojected_" + os.path.basename(args.sarwind))
+    if os.path.isfile(filename):
+        logging.debug("%s already exists" % filename)
+        return
 
     # Export
     n.export(filename)
@@ -84,10 +108,10 @@ def main(args=None):
     metadata["date_created"] = created
     # Change title
     metadata["title"] = "Map projected s" + title[1:]
-    metadata["title_no"] = "lkjsdfvklh"
+    metadata["title_no"] = "Kartprojisert o" + title_no[1:]
     # Change summary
     metadata["summary"] = "Map projected s" + summary[1:]
-    metadata["summary_no"] = "kjhkh"
+    metadata["summary_no"] = "Kartprojisert o" + summary_no[1:]
     # Update history
     metadata["history"] = ds.history + "\n%s: reproject to %s grid mapping" % (
         created, ds["windspeed"].grid_mapping)
@@ -96,6 +120,12 @@ def main(args=None):
     ds.delncattr("NANSAT_GeoTransform")
     ds.delncattr("NANSAT_Projection")
     ds.delncattr("filename")
+    ds["swathmask"].delncattr("wkv")
+    ds["swathmask"].delncattr("colormap")
+    ds["swathmask"].delncattr("PixelFunctionType")
+
+    # Remove wrong metadata
+    ds["swathmask"].delncattr("standard_name")
 
     # Remove old history
     ds.delncattr("history")
@@ -103,6 +133,11 @@ def main(args=None):
     # Add metadata to nc-file
     ds.setncatts(metadata)
     ds.close()
+
+    logging.info("Reprojected wind field stored as %s" % filename)
+
+    statusm, msgm = export_mmd(filename, args.nc_target_path, args.odap_target_url,
+                               parent_mmd=args.parent_mmd)
 
 
 def _main():  # pragma: no cover
