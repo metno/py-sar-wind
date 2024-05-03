@@ -97,7 +97,7 @@ def main(args=None):
         return
 
     # Export
-    n.export(filename)
+    n.export2thredds(filename, time=time)
     created = datetime.datetime.now(pytz.timezone("utc")).isoformat()
 
     # Copy and update metadata
@@ -113,7 +113,7 @@ def main(args=None):
     metadata["summary"] = "Map projected s" + summary[1:]
     metadata["summary_no"] = "Kartprojisert o" + summary_no[1:]
     # Update history
-    metadata["history"] = ds.history + "\n%s: reproject to %s grid mapping" % (
+    metadata["history"] = history + "\n%s: reproject to %s grid mapping" % (
         created, ds["windspeed"].grid_mapping)
 
     # Remove not needed metadata
