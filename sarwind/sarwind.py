@@ -374,7 +374,7 @@ class SARWind(Nansat, object):
         metadata["naming_authority"] = "no.met"
         metadata["date_created"] = datetime.datetime.utcnow().replace(
             tzinfo=pytz.timezone("utc")).isoformat()
-        metadata["title"] = ("Surface wind (10 m above sea level) estimated from %s NRCS, "
+        metadata["title"] = ("Sea surface wind (10 m above sea level) estimated from %s NRCS, "
                              "acquired on %s") % (
             platforms[sar_filename[:3]][0], t0.strftime("%Y-%m-%d %H:%M:%S UTC"))
         metadata["title_no"] = "Overflatevind (10 moh) utledet fra %s NRCS %s" % (

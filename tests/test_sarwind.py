@@ -277,7 +277,7 @@ def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
     fn = "S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A_wind.nc"
     assert os.path.isfile(fn)
     ds = netCDF4.Dataset(fn)
-    tit = ("Surface wind (10 m above sea level) estimated from Sentinel-1A NRCS, "
+    tit = ("Sea surface wind (10 m above sea level) estimated from Sentinel-1A NRCS, "
            "acquired on 2022-10-26 05:44:47 UTC")
     assert ds.title == tit
     os.remove(fn)

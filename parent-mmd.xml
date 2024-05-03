@@ -1,7 +1,7 @@
 <mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">
   <mmd:metadata_identifier>no.met:c39951c2-e8df-4b2f-8198-d29a28c43d79</mmd:metadata_identifier>
-  <mmd:title xml:lang="en">SAR sea surface wind (10m)</mmd:title>
-  <mmd:title xml:lang="no">SAR vindhastighet i 10 meters høyde over havoverflaten</mmd:title>
+  <mmd:title xml:lang="en">Sea surface wind estimated from Synthetic Aperture Radar (SAR) C-band Normalized Radar Cross Section</mmd:title>
+  <mmd:title xml:lang="no">Overflatevind (10m) utledet fra syntetisk aperture radar (SAR) tilbakespredning</mmd:title>
   <mmd:abstract xml:lang="en">Wind speed calculated from C-band Synthetic Aperture Radar (SAR) Normalized Radar Cross Section (NRCS) and wind direction from a numerical weather forecast model, using CMOD5n. The wind speed is calculated for neutrally stable conditions and is equivalent to the wind stress.</mmd:abstract>
   <mmd:abstract xml:lang="no">Vindstyrke beregnet fra SAR C-bånd tilbakespredning og vindretning fra varslingsmodell, ved bruk av CMOD5n. Vindstyrken er beregnet under antagelse av nøytral atmosfærestabilitet, og er representativ for vindstress.</mmd:abstract>
   <mmd:metadata_status>Active</mmd:metadata_status>
@@ -20,8 +20,8 @@
   </mmd:temporal_extent>
   <mmd:iso_topic_category>climatologyMeteorologyAtmosphere</mmd:iso_topic_category>
   <mmd:keywords vocabulary="GCMDSK">
-    <mmd:keyword> EARTH SCIENCE &gt; OCEANS &gt; OCEAN WINDS &gt; SURFACE WINDS &gt; WIND SPEED</mmd:keyword>
-    <mmd:keyword> EARTH SCIENCE &gt; OCEANS &gt; OCEAN WINDS &gt; WIND STRESS</mmd:keyword>
+    <mmd:keyword>EARTH SCIENCE &gt; OCEANS &gt; OCEAN WINDS &gt; SURFACE WINDS &gt; WIND SPEED</mmd:keyword>
+    <mmd:keyword>EARTH SCIENCE &gt; OCEANS &gt; OCEAN WINDS &gt; WIND STRESS</mmd:keyword>
     <mmd:resource>https://vocab.met.no/GCMDSK</mmd:resource>
     <mmd:separator></mmd:separator>
   </mmd:keywords>
