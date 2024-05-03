@@ -50,7 +50,9 @@ def create_parser():
                     "wind directions."
     )
     parser.add_argument(
-        "-t", "--time", type=str, default=datetime.datetime.now(timezone("utc")).isoformat(),
+        "-t", "--time",
+        type=str,
+        default=datetime.datetime.utcnow().replace(tzinfo=timezone("utc")).isoformat(),
         help="Central time of SAR data search (ISO format)."
     )
     parser.add_argument(
@@ -192,6 +194,8 @@ def main(args=None):
         if url not in sar_urls:
             sar_urls.append(url)
 
+    fna = None
+    fnm = None
     for url in sar_urls:
         if url in processed_urls:
             logging.info("Already processed: %s" % url)

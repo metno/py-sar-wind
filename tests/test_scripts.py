@@ -155,3 +155,16 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
             assert "Already processed" in str(lines[1])
 
         assert not os.path.isfile(fp.name)
+
+
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
+def test_reproject_and_export(monkeypatch):
+
+    assert title == ("Map projected surface wind at 10 m height "
+                     "estimated from Sentinel-1A NRCS, acquired on "
+                     "2024-05-03T04:44:37.726378+00:00")
+    assert summary == ("Map projected surface wind speed at 10 m height calculated from "
+                       "C-band Synthetic Aperture Radar (SAR) Normalized Radar Cross Section"
+                       " (NRCS) and model forecast wind, using CMOD5n. The wind speed is "
+                       "calculated for neutrally stable conditions and is equivalent to the "
+                       "wind stress.")

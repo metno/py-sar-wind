@@ -44,9 +44,6 @@ class SARWind(Nansat, object):
 
         super().__init__(sar_image, *args, **kwargs)
 
-        self.set_metadata("wind_filename", wind)
-        self.set_metadata("sar_filename", sar_image)
-
         # If this is a netcdf file with already calculated windspeed
         # do not recalculate wind
         if self.has_band("windspeed"):
@@ -77,6 +74,18 @@ class SARWind(Nansat, object):
         land = topo[1] > 0
         if land.all():
             raise ValueError("No SAR NRCS ocean coverage.")
+
+        # Set correct time_coverage (opendap mapper sets end=start)
+        try:
+            ds = netCDF4.Dataset(sar_image)
+        except OSError:
+            ds = netCDF4.Dataset(sar_image + "#fillmismatch")
+        self.set_metadata("time_coverage_start", ds.time_coverage_start)
+        self.set_metadata("time_coverage_end", ds.time_coverage_end)
+
+        # Store wind and SAR filenames/urls
+        self.set_metadata("wind_filename", wind)
+        self.set_metadata("sar_filename", sar_image)
 
         # Get VV NRCS
         s0vv = self[self.sigma0_bandNo]
@@ -153,6 +162,15 @@ class SARWind(Nansat, object):
         look_dir = self[self.get_band_number({"standard_name": "sensor_azimuth_angle"})]
         look_dir[np.isnan(wind_from)] = np.nan
         look_relative_wind_direction = np.mod(wind_from - look_dir, 360.)
+        # Store look relative wind direction
+        self.add_band(
+            array=look_relative_wind_direction,
+            nomem=True,
+            parameters={
+                "name": "look_relative_wind_direction",
+                "units": "degrees",
+                "long_name": "Look relative wind direction",
+            })
 
         # Calculate wind speed
         windspeed = cmod5n_inverse(s0vv, look_relative_wind_direction,
@@ -166,8 +184,10 @@ class SARWind(Nansat, object):
         windspeed[topo[1] > 0] = np.nan
 
         # Calculate mean time of the SAR NRCS grid
-        t0 = datetime.datetime.fromisoformat(self.get_metadata("time_coverage_start"))
-        t1 = datetime.datetime.fromisoformat(self.get_metadata("time_coverage_end"))
+        t0 = datetime.datetime.fromisoformat(
+            self.get_metadata("time_coverage_start").replace("Z", "+00:00"))
+        t1 = datetime.datetime.fromisoformat(
+            self.get_metadata("time_coverage_end").replace("Z", "+00:00"))
         sar_mean_time = t0 + (t1 - t0)/2
         if sar_mean_time.tzinfo is None:
             sar_mean_time = pytz.utc.localize(sar_mean_time)
@@ -204,11 +224,12 @@ class SARWind(Nansat, object):
         # Update metadata
         metadata = self.get_metadata()
         auxm = aux.get_metadata()
-        self.set_related_dataset(metadata, auxm)
+        # When https://github.com/metno/mmd/issues/119 is resolved, update and uncomment:
+        # self.set_related_dataset(metadata, auxm)
 
         history = metadata.get("history", "")
-        self.set_metadata("swhistory", history + "%s: %s(%s, %s)" % (
-            datetime.datetime.now(tz=pytz.UTC).isoformat(),
+        self.set_metadata("swhistory", history + "\n%s: %s(%s, %s)" % (
+            datetime.datetime.utcnow().replace(tzinfo=pytz.timezone("utc")).isoformat(),
             "SARWind",
             self.get_metadata("wind_filename"),
             self.get_metadata("sar_filename"))
@@ -307,6 +328,7 @@ class SARWind(Nansat, object):
                 self.get_band_number("longitude"),
                 self.get_band_number("latitude"),
                 self.get_band_number("wind_direction"),
+                self.get_band_number("look_relative_wind_direction"),
                 self.get_band_number("windspeed"),
                 self.get_band_number("model_windspeed"),
             ]
@@ -341,15 +363,20 @@ class SARWind(Nansat, object):
         # Set global ACDD metadata
         metadata["id"] = str(uuid.uuid4())
         metadata["naming_authority"] = "no.met"
-        metadata["date_created"] = datetime.datetime.now(pytz.timezone("utc")).isoformat()
-        metadata["title"] = "Surface wind (10m) estimated from %s NRCS" % sar_filename
-        metadata["summary"] = ("Wind speed calculated from C-band Synthetic"
+        metadata["date_created"] = datetime.datetime.utcnow().replace(
+            tzinfo=pytz.timezone("utc")).isoformat()
+        metadata["title"] = ("Surface wind at 10 m height estimated from %s NRCS, "
+                             "acquired on %s") % (
+                                platforms[sar_filename[:3]][0],
+                                datetime.datetime.fromisoformat(
+                                    old_metadata["time_coverage_start"].replace("Z", "+00:00")))
+        metadata["summary"] = ("Surface wind speed at 10 m height calculated from C-band Synthetic"
                                " Aperture Radar (SAR) Normalized Radar Cross Section (NRCS)"
                                " and model forecast wind, using CMOD5n. The wind speed is "
                                "calculated for neutrally stable conditions and is "
                                "equivalent to the wind stress.")
-        metadata["time_coverage_start"] = pytz.utc.localize(
-            datetime.datetime.fromisoformat(old_metadata["time_coverage_start"])).isoformat()
+        metadata["time_coverage_start"] = datetime.datetime.fromisoformat(
+            old_metadata["time_coverage_start"].replace("Z", "+00:00")).isoformat()
         metadata["geospatial_lat_max"] = "%.2f" % lat.max()
         metadata["geospatial_lat_min"] = "%.2f" % lat.min()
         metadata["geospatial_lon_max"] = "%.2f" % lon.max()
@@ -368,8 +395,8 @@ class SARWind(Nansat, object):
 
         metadata["publisher_type"] = "institution"
         metadata["publisher_email"] = "data-management-group@met.no"
-        metadata["time_coverage_end"] = pytz.utc.localize(
-            datetime.datetime.fromisoformat(old_metadata["time_coverage_end"])).isoformat()
+        metadata["time_coverage_end"] = datetime.datetime.fromisoformat(
+            old_metadata["time_coverage_end"].replace("Z", "+00:00")).isoformat()
         metadata["geospatial_bounds"] = boundary
         metadata["processing_level"] = "Operational"
         metadata["contributor_role"] = "Technical contact"
@@ -405,6 +432,13 @@ class SARWind(Nansat, object):
             metadata["related_dataset"] = old_metadata["related_dataset"]
         metadata["iso_topic_category"] = "climatologyMeteorologyAtmosphere"
         metadata["quality_control"] = "No quality control"
+
+        # Correct filename metadata
+        metadata.pop("filename", "")
+
+        # Add filenames of datasets used for CMOD calculation
+        metadata["wind_filename"] = old_metadata["wind_filename"]
+        metadata["sar_filename"] = old_metadata["sar_filename"]
 
         # END MOVE
 

@@ -1,0 +1,99 @@
+<mmd:mmd xmlns:mmd="http://www.met.no/schema/mmd" xmlns:gml="http://www.opengis.net/gml">
+  <mmd:metadata_identifier>no.met:c39951c2-e8df-4b2f-8198-d29a28c43d79</mmd:metadata_identifier>
+  <mmd:title xml:lang="en">SAR sea surface wind (10m)</mmd:title>
+  <mmd:title xml:lang="no">SAR vindhastighet i 10 meters høyde over havoverflaten</mmd:title>
+  <mmd:abstract xml:lang="en">Wind speed calculated from C-band Synthetic Aperture Radar (SAR) Normalized Radar Cross Section (NRCS) and wind direction from a numerical weather forecast model, using CMOD5n. The wind speed is calculated for neutrally stable conditions and is equivalent to the wind stress.</mmd:abstract>
+  <mmd:abstract xml:lang="no">Vindstyrke beregnet fra SAR C-bånd tilbakespredning og vindretning fra varslingsmodell, ved bruk av CMOD5n. Vindstyrken er beregnet under antagelse av nøytral atmosfærestabilitet, og er representativ for vindstress.</mmd:abstract>
+  <mmd:metadata_status>Active</mmd:metadata_status>
+  <mmd:dataset_production_status>In Work</mmd:dataset_production_status>
+  <mmd:collection>METNCS</mmd:collection>
+  <mmd:collection>ADC</mmd:collection>
+  <mmd:collection>SIOSIN</mmd:collection>
+  <mmd:last_metadata_update>
+    <mmd:update>
+      <mmd:datetime>2024-04-29T13:21:27.176174Z</mmd:datetime>
+      <mmd:type>Created</mmd:type>
+    </mmd:update>
+  </mmd:last_metadata_update>
+  <mmd:temporal_extent>
+    <mmd:start_date>2024-04-29T08:19:19Z</mmd:start_date>
+  </mmd:temporal_extent>
+  <mmd:iso_topic_category>climatologyMeteorologyAtmosphere</mmd:iso_topic_category>
+  <mmd:keywords vocabulary="GCMDSK">
+    <mmd:keyword> EARTH SCIENCE &gt; OCEANS &gt; OCEAN WINDS &gt; SURFACE WINDS &gt; WIND SPEED</mmd:keyword>
+    <mmd:keyword> EARTH SCIENCE &gt; OCEANS &gt; OCEAN WINDS &gt; WIND STRESS</mmd:keyword>
+    <mmd:resource>https://vocab.met.no/GCMDSK</mmd:resource>
+    <mmd:separator></mmd:separator>
+  </mmd:keywords>
+  <mmd:keywords vocabulary="GEMET">
+    <mmd:keyword>Atmospheric conditions</mmd:keyword>
+    <mmd:resource>http://inspire.ec.europa.eu/theme</mmd:resource>
+    <mmd:separator></mmd:separator>
+  </mmd:keywords>
+  <mmd:keywords vocabulary="NORTHEMES">
+    <mmd:keyword>Vær og klima</mmd:keyword>
+    <mmd:resource>https://register.geonorge.no/metadata-kodelister/nasjonal-temainndeling</mmd:resource>
+    <mmd:separator></mmd:separator>
+  </mmd:keywords>
+  <mmd:keywords vocabulary="CFSTDN">
+    <mmd:keyword>wind_from_direction</mmd:keyword>
+    <mmd:keyword>wind_speed</mmd:keyword>
+    <mmd:keyword>eastward_wind</mmd:keyword>
+    <mmd:keyword>northward_wind</mmd:keyword>
+    <mmd:resource>https://vocab.met.no/mmd/Keywords_Vocabulary/CFSTDN</mmd:resource>
+    <mmd:separator></mmd:separator>
+  </mmd:keywords>
+  <mmd:geographic_extent>
+    <mmd:rectangle srsName="EPSG:4326">
+      <mmd:north>90.0</mmd:north>
+      <mmd:south>45.0</mmd:south>
+      <mmd:east>180.0</mmd:east>
+      <mmd:west>-180.0</mmd:west>
+    </mmd:rectangle>
+  </mmd:geographic_extent>
+  <mmd:dataset_language>en</mmd:dataset_language>
+  <mmd:operational_status>Operational</mmd:operational_status>
+  <mmd:access_constraint>Open</mmd:access_constraint>
+  <mmd:use_constraint>
+    <mmd:identifier>CC-BY-4.0</mmd:identifier>
+    <mmd:resource>https://spdx.org/licenses/CC-BY-4.0</mmd:resource>
+  </mmd:use_constraint>
+  <mmd:personnel>
+    <mmd:role>Investigator</mmd:role>
+    <mmd:name>Morten Wergeland Hansen</mmd:name>
+    <mmd:email>mortenwh@met.no</mmd:email>
+    <mmd:organisation>Norwegian Meteorological Institute (MET Norway)</mmd:organisation>
+  </mmd:personnel>
+  <mmd:personnel>
+    <mmd:role>Technical contact</mmd:role>
+    <mmd:name>Frode Dinessen</mmd:name>
+    <mmd:email>froded@met.no</mmd:email>
+    <mmd:organisation>Norwegian Meteorological Institute (MET Norway)</mmd:organisation>
+  </mmd:personnel>
+  <mmd:data_center>
+    <mmd:data_center_name>
+      <mmd:short_name>MET Norway</mmd:short_name>
+      <mmd:long_name>Norwegian Meteorological Institute</mmd:long_name>
+    </mmd:data_center_name>
+    <mmd:data_center_url>https://www.met.no/</mmd:data_center_url>
+  </mmd:data_center>
+  <mmd:quality_control>No quality control</mmd:quality_control>
+  <mmd:related_information>
+    <mmd:type>Scientific publication</mmd:type>
+    <mmd:description></mmd:description>
+    <mmd:resource>https://doi.org/10.1029/2006JC003743</mmd:resource>
+  </mmd:related_information>
+  <mmd:project>
+    <mmd:short_name>SIOS-InfraNor</mmd:short_name>
+    <mmd:long_name>SIOS – Infrastructure development of the Norwegian node</mmd:long_name>
+  </mmd:project>
+  <mmd:spatial_representation>grid</mmd:spatial_representation>
+  <mmd:activity_type>Space Borne Instrument</mmd:activity_type>
+  <mmd:dataset_citation>
+    <mmd:author>Morten Wergeland Hansen</mmd:author>
+    <mmd:publication_date>2024-04-29T13:21:27.176174Z</mmd:publication_date>
+    <mmd:title>SAR sea surface wind (10m)</mmd:title>
+    <mmd:publisher>Norwegian Meteorological Institute</mmd:publisher>
+    <mmd:url>https://data.met.no/dataset/c39951c2-e8df-4b2f-8198-d29a28c43d79</mmd:url>
+  </mmd:dataset_citation>
+</mmd:mmd>

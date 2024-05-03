@@ -1,5 +1,6 @@
 import os
 import pytest
+import netCDF4
 import tempfile
 
 import numpy as np
@@ -275,6 +276,10 @@ def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
     w.export()
     fn = "S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A_wind.nc"
     assert os.path.isfile(fn)
+    ds = netCDF4.Dataset(fn)
+    tit = ("Surface wind (10m) estimated from Sentinel-1A NRCS, "
+           "acquired on 2022-10-26 05:44:47.271470+00:00")
+    assert ds.title == tit
     os.remove(fn)
     # Provide filename and related_dataset
     with tempfile.NamedTemporaryFile(delete=True) as fp:
@@ -299,6 +304,8 @@ def testSARWind_using_s1IWDV_meps_filenames(sarIW_SAFE, meps):
     """
     from sarwind.sarwind import SARWind
     w = SARWind(sarIW_SAFE, meps)
+    assert w.get_metadata("time_coverage_start") == "2022-10-26T05:44:47.271470"
+    assert w.get_metadata("time_coverage_end") == "2022-10-26T05:45:12.269558"
     assert isinstance(w, SARWind)
 
 
