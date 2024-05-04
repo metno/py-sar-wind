@@ -116,9 +116,8 @@ class SARWind(Nansat, object):
             sar_mean_time = pytz.utc.localize(sar_mean_time)
 
         # Check time difference between SAR and model
-        tdiff = np.abs(sar_mean_time -
-                       datetime.datetime.fromisoformat(aux.get_metadata(band_id=1, key="time")
-                                                        ).replace(tzinfo=pytz.timezone("utc")))
+        tdiff = np.abs(sar_mean_time - datetime.datetime.fromisoformat(
+            aux.get_metadata(band_id=1, key="time")).replace(tzinfo=pytz.timezone("utc")))
         if tdiff.seconds/60 > max_diff_minutes:
             raise ValueError("Time difference between model and SAR wind field is greater "
                              "than %s minutes - wind speed cannot be reliably estimated."
