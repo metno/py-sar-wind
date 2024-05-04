@@ -110,7 +110,7 @@ def process(url, model, output_path, fn_ending):
     except Exception as ee:
         filename = None
         logging.info("Processing of %s and %s failed with message: "
-                      "%s" % (url, model, str(ee)))
+                     "%s" % (url, model, str(ee)))
     else:
         basename = os.path.basename(w.filename).split(".")[0]
         time = datetime.datetime.fromisoformat(
