@@ -46,9 +46,9 @@ def collocate(url, endpoint="https://data.csw.met.no"):
         https://data.csw.met.no
     """
     meps = Meps(url)
-    meps_url = meps.get_odap_url_of_nearest()
+    meps_url = meps.get_odap_url_of_nearest(rel=1)
 
     arome = AromeArctic(url)
-    arome_url = arome.get_odap_url_of_nearest()
+    arome_url = arome.get_odap_url_of_nearest(rel=1)
 
     return meps_url, arome_url

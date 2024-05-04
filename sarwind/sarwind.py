@@ -37,7 +37,8 @@ class SARWind(Nansat, object):
         the SAR image. See nansat.nansat.reproject.
     """
 
-    def __init__(self, sar_image, wind, pixelsize=500, resample_alg=1, *args, **kwargs):
+    def __init__(self, sar_image, wind, pixelsize=500, resample_alg=1, max_diff_minutes=30,
+                 *args, **kwargs):
 
         if not isinstance(sar_image, str) or not isinstance(wind, str):
             raise ValueError("Input parameter for SAR and wind direction must be of type string")
@@ -104,6 +105,24 @@ class SARWind(Nansat, object):
         # Read and reproject model wind field
         aux = Nansat(wind, netcdf_dim={"time": np.datetime64(self.time_coverage_start)})
         aux.reproject(self, resample_alg=resample_alg, tps=True)
+
+        # Calculate mean time of the SAR NRCS grid
+        t0 = datetime.datetime.fromisoformat(
+            self.get_metadata("time_coverage_start").replace("Z", "+00:00"))
+        t1 = datetime.datetime.fromisoformat(
+            self.get_metadata("time_coverage_end").replace("Z", "+00:00"))
+        sar_mean_time = t0 + (t1 - t0)/2
+        if sar_mean_time.tzinfo is None:
+            sar_mean_time = pytz.utc.localize(sar_mean_time)
+
+        # Check time difference between SAR and model
+        tdiff = np.abs(sar_mean_time -
+                       datetime.datetime.fromisoformat(aux.get_metadata(band_id=1, key="time")
+                                                        ).replace(tzinfo=pytz.timezone("utc")))
+        if tdiff.seconds/60 > max_diff_minutes:
+            raise ValueError("Time difference between model and SAR wind field is greater "
+                             "than %s minutes - wind speed cannot be reliably estimated."
+                             % max_diff_minutes)
 
         if np.isnan(aux[1]).all():
             raise ValueError("Failing reprojection - make sure the "
@@ -183,15 +202,6 @@ class SARWind(Nansat, object):
         # Mask land
         windspeed[topo[1] > 0] = np.nan
 
-        # Calculate mean time of the SAR NRCS grid
-        t0 = datetime.datetime.fromisoformat(
-            self.get_metadata("time_coverage_start").replace("Z", "+00:00"))
-        t1 = datetime.datetime.fromisoformat(
-            self.get_metadata("time_coverage_end").replace("Z", "+00:00"))
-        sar_mean_time = t0 + (t1 - t0)/2
-        if sar_mean_time.tzinfo is None:
-            sar_mean_time = pytz.utc.localize(sar_mean_time)
-
         # Add wind speed and direction as bands
         self.add_band(
             array=windspeed,
@@ -217,9 +227,6 @@ class SARWind(Nansat, object):
                 "wkv": "northward_wind",
                 "time": sar_mean_time.isoformat(),
             })
-
-        # set winddir_time to global metadata
-        # self.set_metadata("winddir_time", str(wind_direction_time))
 
         # Update metadata
         metadata = self.get_metadata()

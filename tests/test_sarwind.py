@@ -197,6 +197,9 @@ def testSARWind_using_s1EWnc_arome_filenames_with_nansat(sarEW_NBS, arome):
     from sarwind.sarwind import SARWind
     with pytest.raises(ValueError) as ee:
         SARWind(sarEW_NBS, arome)
+    assert "Time difference between model and SAR wind field is greater" in str(ee.value)
+    with pytest.raises(ValueError) as ee:
+        SARWind(sarEW_NBS, arome, max_diff_minutes=60)
     assert str(ee.value) == ("Failing reprojection - make sure the "
                              "datasets overlap in the geospatial domain.")
 
@@ -219,7 +222,7 @@ def testSARWind_set_related_dataset_with_nansat(monkeypatch, meps_20240416, s1a_
     when it exists in the input datasets.
     """
     from sarwind.sarwind import SARWind
-    w = SARWind(s1a_20240416, meps_20240416)
+    w = SARWind(s1a_20240416, meps_20240416, max_diff_minutes=45)
 
     with monkeypatch.context() as mp:
         mp.setattr("sarwind.sarwind.Nansat.set_metadata", lambda *a, **k: None)
