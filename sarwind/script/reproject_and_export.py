@@ -55,6 +55,14 @@ def create_parser():
         "--odap_target_url", type=str, default=None,
         help="Root folder of the OPeNDAP target url."
     )
+    parser.add_argument(
+        "--log_to_file", action="store_true",
+        help="Log to file instead of the console."
+    )
+    parser.add_argument(
+        "--log_file", type=str, default="process-sar-wind.log",
+        help="Log file name."
+    )
 
     return parser
 
@@ -62,6 +70,8 @@ def create_parser():
 def main(args=None):
     """Reproject and export SAR wind to a new dataset.
     """
+    if args.log_to_file:
+        logging.basicConfig(filename=args.log_file, level=logging.INFO)
     n = Nansat(args.sarwind, mapper="sarwind")
     model = Nansat(n.get_metadata("wind_filename"))
     lon, lat = n.get_corners()
