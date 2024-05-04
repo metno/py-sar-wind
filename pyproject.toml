@@ -42,6 +42,7 @@ dynamic = ["version"]
 
 [project.scripts]
 process_sar_wind = "sarwind.script.process_sar_wind:_main"
+reproject_and_export = "sarwind.script.reproject_and_export:_main"
 
 [project.urls]
 source = "https://github.com/metno/met-sar-vind"
