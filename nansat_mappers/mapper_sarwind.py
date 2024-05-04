@@ -17,7 +17,7 @@ class Mapper(VRT):
         if "title" not in ds.ncattrs():
             raise WrongMapperError
         else:
-            if "Surface wind" not in ds.title or "NRCS" not in ds.title:
+            if "urface wind" not in ds.title or "NRCS" not in ds.title:
                 raise WrongMapperError
         longitude = ds['longitude'][:].data
         latitude = ds['latitude'][:].data
