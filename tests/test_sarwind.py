@@ -1,68 +1,333 @@
+import os
 import pytest
-import datetime
+import netCDF4
+import tempfile
+
 import numpy as np
-from sarwind.sarwind import SARWind
+
+from unittest.mock import Mock
+
+nansat_installed = True
+try:
+    import nansat  # noqa
+except ModuleNotFoundError:
+    nansat_installed = False
 
 
-@pytest.mark.unittests
-@pytest.mark.sarwind
-def testSARWind__set_aux_wind(monkeypatch):
-    """ Test that SARWind.set_aux_wind calls functions
-    _get_aux_wind_from_str and Nansat.add_band.
+class SelectMock(Mock):
+    pass
+
+
+@pytest.mark.skipif(nansat_installed, reason="Only works when nansat is not installed")
+@pytest.mark.without_nansat
+def testSARWind_init(mock_nansat, monkeypatch):
+    """ Test init
     """
-    mock1_called = 0
+    from sarwind.sarwind import SARWind
 
-    def mock1(*a):
-        nonlocal mock1_called
-        mock1_called += 1
-        speed = np.array([12, 10])
-        dir = np.array([20, 21])
-        time = datetime.datetime(2021, 3, 24, 3, 0)
-        return speed, dir, time
-
-    mock2_called = 0
-
-    def mock2(*a, **kw):
-        nonlocal mock2_called
-        mock2_called += 1
+    with pytest.raises(ValueError) as ee:
+        SARWind(1, 2)
+    assert str(ee.value) == ("Input parameter for SAR and wind "
+                             "direction must be of type string")
 
     with monkeypatch.context() as mp:
-        mp.setattr(SARWind, "_get_aux_wind_from_str", mock1)
-        mp.setattr(SARWind, "add_band", mock2)
-        mp.setattr(SARWind, "__init__", lambda *a: None)
+        mp.setattr("sarwind.sarwind.Nansat.__init__", lambda *a, **k: None)
+        mp.setattr("sarwind.sarwind.Nansat.set_metadata", lambda *args, **kwargs: 1)
+        mp.setattr("sarwind.sarwind.Nansat.has_band", lambda *args, **kwargs: True)
 
-        n = SARWind()
-        # Check that it works with expected input
-        assert n.set_aux_wind('path/to/wind_field_file.nc') is None
-        # Check that the mock for _get_aux_wind_from_str is called once
-        assert mock1_called == 1
-        # Check that the mock for add_band is called twice
-        assert mock2_called == 2
+        with pytest.raises(Exception) as ee:
+            SARWind("sar.nc", "model.nc")
+        assert str(ee.value) == "Wind speed already calculated"
 
-        # Check that TypeError is raised if input is of wrong type
-        with pytest.raises(TypeError) as e:
-            n.set_aux_wind(1)
+        mp.setattr("sarwind.sarwind.Nansat.__init__", lambda *a, **k: None)
+        mp.setattr("sarwind.sarwind.Nansat.has_band", lambda *args, **kwargs: False)
+        mp.setattr("sarwind.sarwind.Nansat.get_band_number", lambda *args, **kwargs: 1)
+        mp.setattr("sarwind.sarwind.Nansat.resize", lambda *args, **kwargs: 1)
+        mp.setattr("sarwind.sarwind.Nansat.reproject", lambda *args, **kwargs: None)
+        mp.setattr("sarwind.sarwind.Nansat.__getitem__", lambda *args, **kwargs: np.array([1, 1]))
+        with pytest.raises(Exception) as ee:
+            SARWind("sar.nc", "model.nc")
+        assert str(ee.value) == "No SAR NRCS ocean coverage."
 
-        assert str(e.value) == "wind must be of type string"
 
-
-@pytest.mark.nbs
-@pytest.mark.sarwind
-def testSARWind_using_s1EWnc_arome_filenames(sarEW_NBS, arome):
+@pytest.mark.skipif(nansat_installed, reason="Only works when nansat is not installed")
+@pytest.mark.without_nansat
+def testSARWind_using_s1EWnc_arome_filenames(mock_nansat, sarEW_NBS, arome, monkeypatch):
     """ Test that wind is generated from Sentinel-1 data in EW-mode,
     HH-polarization and NBS netCDF file with wind direction from the
-    Arome Arctic model.
+    Arome Arctic model. We do not need to test SAFE files, as that is
+    a Nansat issue.
+
+    S1A_EW_GRDM_1SDH_20210324T035507_20210324T035612_037135_045F42_5B4C.NBS.nc
+    arome_arctic_vtk_20210324T03Z_nansat05.nc
     """
-    w = SARWind(sarEW_NBS, arome)
-    assert type(w) == SARWind
+    from sarwind.sarwind import SARWind
+    with monkeypatch.context() as mp:
+        smock = SelectMock()
+        smock.side_effect = [
+            np.array([0, 0]),           # topo[1]
+            1,                          # self[self.sigma0_bandNo]
+            np.array([np.nan, np.nan])  # aux[1]
+        ]
+        mp.setattr("sarwind.sarwind.Nansat.__getitem__", smock)
+        smock2 = SelectMock()
+        smock2.side_effect = [
+            "VV",
+            "2024-04-04T23:28:31+00:00",
+            "2024-04-04T23:28:51+00:00",
+            "2024-04-04T23:28:31+00:00",
+        ]
+        mp.setattr("sarwind.sarwind.Nansat.get_metadata", smock2)
+        with pytest.raises(ValueError) as ee:
+            SARWind(sarEW_NBS, arome)
+        assert str(ee.value) == ("Failing reprojection - make sure the "
+                                 "datasets overlap in the geospatial domain.")
 
 
-@pytest.mark.safe
-@pytest.mark.sarwind
-def testSARWind_using_s1IWDVsafe_meps_filenames(sarIW_SAFE, arome):
+@pytest.mark.without_nansat
+def testSARWind_get_model_wind_field(mock_nansat, arome, monkeypatch):
+    """
+    """
+    from sarwind.sarwind import SARWind
+    from sarwind.sarwind import Nansat
+
+    with monkeypatch.context() as mp:
+        smock = SelectMock()
+        smock.side_effect = [
+            np.array([0, 0]),
+            np.array([1, 1])
+        ]
+        mp.setattr("sarwind.sarwind.Nansat.__getitem__", smock)
+
+        aux = Nansat(arome)
+
+        speed, dir, time = SARWind.get_model_wind_field(aux)
+
+        assert not np.isnan(speed).all()
+        assert not np.isnan(dir).all()
+
+
+@pytest.mark.skipif(nansat_installed, reason="Only works when nansat is not installed")
+@pytest.mark.without_nansat
+def testSARWind_set_related_dataset(mock_nansat, monkeypatch):
+    """ Test that the related dataset attribute is correctly added
+    when it exists in the input datasets.
+    """
+    from sarwind.sarwind import SARWind
+
+    with monkeypatch.context() as mp:
+        mp.setattr("sarwind.sarwind.Nansat.set_metadata", lambda *a, **k: None)
+        mp.setattr(SARWind, "__init__", lambda *a, **kw: None)
+        w = SARWind("sar_image", "wind")
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853", "naming_authority": "no.met"}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c", "naming_authority": "no.met"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ("no.met:11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                              "no.met:d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853"}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c", "naming_authority": "no.met"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ("11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                              "no.met:d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853", "naming_authority": "no.met"}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ("no.met:11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                              "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853"}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ("11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                              "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+
+        metadata = {}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)"
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853"}
+        auxm = {}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == "11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary)"
+
+        metadata = {}
+        auxm = {}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ""
+
+
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
+def testSARWind_init_with_nansat(monkeypatch):
+    """ Test init
+    """
+    from sarwind.sarwind import SARWind
+    from sarwind.sarwind import Nansat
+    with pytest.raises(ValueError) as ee:
+        SARWind(1, 2)
+    assert str(ee.value) == ("Input parameter for SAR and wind "
+                             "direction must be of type string")
+
+    with monkeypatch.context() as mp:
+        mp.setattr(Nansat, "__init__", lambda *a, **k: None)
+        mp.setattr(Nansat, "set_metadata", lambda *args, **kwargs: 1)
+        mp.setattr(Nansat, "has_band", lambda *args, **kwargs: True)
+
+        with pytest.raises(Exception) as ee:
+            SARWind("sar.nc", "model.nc")
+        assert str(ee.value) == "Wind speed already calculated"
+
+        mp.setattr(Nansat, "__init__", lambda *a, **k: None)
+        mp.setattr(Nansat, "has_band", lambda *args, **kwargs: False)
+        mp.setattr(Nansat, "get_band_number", lambda *args, **kwargs: 1)
+        mp.setattr(Nansat, "resize", lambda *args, **kwargs: 1)
+        mp.setattr(Nansat, "reproject", lambda *args, **kwargs: None)
+        mp.setattr(Nansat, "__getitem__", lambda *args, **kwargs: np.array([1, 1]))
+        with pytest.raises(Exception) as ee:
+            SARWind("sar.nc", "model.nc")
+        assert str(ee.value) == "No SAR NRCS ocean coverage."
+
+
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
+def testSARWind_using_s1EWnc_arome_filenames_with_nansat(sarEW_NBS, arome):
+    """ Test that wind is generated from Sentinel-1 data in EW-mode,
+    HH-polarization and NBS netCDF file with wind direction from the
+    Arome Arctic model. We do not need to test SAFE files, as that is
+    a Nansat issue.
+
+    S1A_EW_GRDM_1SDH_20210324T035507_20210324T035612_037135_045F42_5B4C.NBS.nc
+    arome_arctic_vtk_20210324T03Z_nansat05.nc
+    """
+    from sarwind.sarwind import SARWind
+    with pytest.raises(ValueError) as ee:
+        SARWind(sarEW_NBS, arome)
+    assert "Time difference between model and SAR wind field is greater" in str(ee.value)
+    with pytest.raises(ValueError) as ee:
+        SARWind(sarEW_NBS, arome, max_diff_minutes=60)
+    assert str(ee.value) == ("Failing reprojection - make sure the "
+                             "datasets overlap in the geospatial domain.")
+
+
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
+def testSARWind_get_model_wind_field_with_nansat(arome):
+    """
+    """
+    from sarwind.sarwind import SARWind
+    from sarwind.sarwind import Nansat
+    aux = Nansat(arome)
+    speed, dir, time = SARWind.get_model_wind_field(aux)
+    assert not np.isnan(speed).all()
+    assert not np.isnan(dir).all()
+
+
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
+def testSARWind_set_related_dataset_with_nansat(monkeypatch, meps_20240416, s1a_20240416):
+    """ Test that the related dataset attribute is correctly added
+    when it exists in the input datasets.
+    """
+    from sarwind.sarwind import SARWind
+    w = SARWind(s1a_20240416, meps_20240416, max_diff_minutes=45)
+
+    with monkeypatch.context() as mp:
+        mp.setattr("sarwind.sarwind.Nansat.set_metadata", lambda *a, **k: None)
+        mp.setattr(SARWind, "__init__", lambda *a, **kw: None)
+        w = SARWind("sar_image", "wind")
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853", "naming_authority": "no.met"}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c", "naming_authority": "no.met"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ("no.met:11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                              "no.met:d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853"}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c", "naming_authority": "no.met"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ("11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                              "no.met:d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853", "naming_authority": "no.met"}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ("no.met:11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                              "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853"}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ("11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                              "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+
+        metadata = {}
+        auxm = {"id": "d1863d82-47b3-4048-9dcd-b4dafc45eb7c"}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)"
+
+        metadata = {"id": "11d33864-75ea-4a36-9a4e-68c5b3e97853"}
+        auxm = {}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == "11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary)"
+
+        metadata = {}
+        auxm = {}
+        related_ds = w.set_related_dataset(metadata, auxm)
+        assert related_ds == ""
+
+
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
+def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
+    """ Test the export function
+    """
+    from sarwind.sarwind import SARWind
+    w = SARWind(sarIW_SAFE, meps)
+    # No args
+    w.export()
+    fn = "S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A_wind.nc"
+    assert os.path.isfile(fn)
+    ds = netCDF4.Dataset(fn)
+    tit = ("Sea surface wind (10 m above sea level) estimated from Sentinel-1A NRCS, "
+           "acquired on 2022-10-26 05:44:47 UTC")
+    assert ds.title == tit
+    os.remove(fn)
+    # Provide filename and related_dataset
+    with tempfile.NamedTemporaryFile(delete=True) as fp:
+        w.set_metadata("related_dataset", "11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                                          "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
+        w.export(filename=fp.name)
+        assert os.path.isfile(fp.name)
+    assert not os.path.isfile(fp.name)
+    # Provide bands
+    bands = ["x_wind_10m"]
+    with tempfile.NamedTemporaryFile(delete=True) as fp:
+        w.export(filename=fp.name, bands=bands)
+        assert os.path.isfile(fp.name)
+    assert not os.path.isfile(fp.name)
+
+
+@pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
+def testSARWind_using_s1IWDV_meps_filenames(sarIW_SAFE, meps):
     """ Test that wind is generated from Sentinel-1 data in IW-mode,
     VV-polarization and SAFE based netcdf file, with wind direction
     from MEPS model.
     """
-    w = SARWind(sarIW_SAFE, arome)
-    assert type(w) == SARWind
+    from sarwind.sarwind import SARWind
+    w = SARWind(sarIW_SAFE, meps)
+    assert w.get_metadata("time_coverage_start") == "2022-10-26T05:44:47.271470"
+    assert w.get_metadata("time_coverage_end") == "2022-10-26T05:45:12.269558"
+    assert isinstance(w, SARWind)
+
+
+@pytest.mark.without_nansat
+def testSARWind_calculate_wind_from_direction():
+    """ Test that the wind direction becomes correct.
+    """
+    from sarwind.sarwind import SARWind
+    speed = 4
+    dir0 = 30
+    u = -2
+    v = -2*np.sqrt(3)
+    assert np.round(np.sqrt(np.square(u) + np.square(v)), decimals=2) == speed
+    dir = SARWind.calculate_wind_from_direction(u, v)
+    assert np.round(dir, decimals=2) == dir0

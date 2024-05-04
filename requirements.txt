@@ -1,5 +1,3 @@
-GDAL
-nansat
 netCDF4
 numpy
 Pillow
@@ -11,3 +9,5 @@ six
 urllib3
 xdg
 owslib
+py_mmd_tools@git+https://github.com/metno/py-mmd-tools.git
+fadg@git+https://github.com/metno/esa-coscaw-data-search.git

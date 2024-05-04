@@ -20,6 +20,8 @@ import sys
 import shutil
 import pytest
 
+from pathlib import Path
+
 # Note: This line forces the test suite to import the sarwind package
 # in the current source tree
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
@@ -27,6 +29,17 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pa
 ##
 #  Directory Fixtures
 ##
+
+
+@pytest.fixture(autouse=True)
+def no_mkdir(monkeypatch):
+    monkeypatch.setattr("os.mkdir", lambda *a, **k: None)
+
+
+@pytest.fixture(autouse=True)
+def no_Path_dot_mkdir(monkeypatch):
+    monkeypatch.setattr(Path, "__init__", lambda *a, **k: None)
+    monkeypatch.setattr(Path, "mkdir", lambda *a, **k: None)
 
 
 @pytest.fixture(scope="session")
@@ -84,6 +97,22 @@ def sarIW_SAFE(filesDir):
 
 
 @pytest.fixture(scope="session")
+def s1a_20240416(filesDir):
+    """ Test file with id and naming_authority.
+    """
+    filename = "S1A_IW_GRDM_1SDV_20240416T171946_20240416T172013_053462_067C88_E676.nc"
+    return os.path.join(filesDir, filename)
+
+
+@pytest.fixture(scope="session")
+def meps_20240416(filesDir):
+    """ Test file with id and naming_authority.
+    """
+    filename = "meps_mbr000_sfc_20240416T18Z.nc"
+    return os.path.join(filesDir, filename)
+
+
+@pytest.fixture(scope="session")
 def meps(filesDir):
     filename = "meps_det_vdiv_2_5km_20221026T06Z_nansat05.nc"
     return os.path.join(filesDir, filename)
@@ -91,7 +120,7 @@ def meps(filesDir):
 
 @pytest.fixture(scope="session")
 def arome(filesDir):
-    filename = "arome_arctic_vtk_20210324T03Z_nansat05.nc"
+    filename = "arome_arctic_vtk_20210324T03Z_nansat.nc"
     return os.path.join(filesDir, filename)
 
 
@@ -114,3 +143,58 @@ def fncDir(tmpDir):
 ##
 #  Objects
 ##
+class MockNansat:
+    """Mock of Nansat class
+    """
+    time_coverage_start = "2024-04-04T23:22:31+00:00"
+
+    def __init__(self, *a, **k):
+        return None
+
+    def set_metadata(self, *args, **kwargs):
+        return None
+
+    def has_band(self, *args, **kwargs):
+        return None
+
+    def add_band(self, *args, **kwargs):
+        return None
+
+    def get_band_number(self, *args, **kwargs):
+        return None
+
+    def resize(self, *args, **kwargs):
+        return None
+
+    def reproject(self, *args, **kwargs):
+        return None
+
+    def get_metadata(self, *args, **kwargs):
+        return None
+
+    def __getitem__(self, *args, **kwargs):
+        return None
+
+
+class mocked_nansat:
+    """Mock of nansat module
+    """
+    Nansat = MockNansat
+
+
+@pytest.fixture(scope="function")
+def mock_nansat(monkeypatch):
+    """Mocks nansat module and Nansat class
+    """
+    # The following needs to be done if nansat is installed but the
+    # code is still incomplete
+    # monkeypatch.setattr("nansat.nansat.Nansat.__init__", lambda *a, **k: MockNansat())
+    # monkeypatch.setattr("nansat.Nansat.__init__", lambda *a, **k: MockNansat())
+    # monkeypatch.setattr("nansat.Nansat.set_metadata", lambda *a, **k: None)
+    # monkeypatch.setattr("nansat.Nansat.has_band", lambda *a, **k: None)
+    # monkeypatch.setattr("nansat.Nansat.get_band_number", lambda *a, **k: None)
+    # monkeypatch.setattr("nansat.Nansat.resize", lambda *a, **k: None)
+    # monkeypatch.setattr("nansat.Nansat.__get_item__", lambda *a, **k: None)
+    monkeypatch.setitem(sys.modules, "nansat", mocked_nansat())
+    monkeypatch.setitem(sys.modules, "nansat.nansat", mocked_nansat())
+    monkeypatch.setattr("sarwind.sarwind.Nansat", MockNansat)
