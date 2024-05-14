@@ -103,7 +103,12 @@ class SARWind(Nansat, object):
             s0vv = self[s0hh_band_no]*PR
 
         # Read and reproject model wind field
-        aux = Nansat(wind, netcdf_dim={"time": np.datetime64(self.time_coverage_start)})
+        aux = Nansat(wind,
+                     netcdf_dim={
+                         # OBS: timezone info is lost by np.datetime64
+                         #      - ignore it, since we always operate
+                         #        with UTC
+                         "time": np.datetime64(self.time_coverage_start)})
         aux.reproject(self, resample_alg=resample_alg, tps=True)
 
         # Calculate mean time of the SAR NRCS grid
