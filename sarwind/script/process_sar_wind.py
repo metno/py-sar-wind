@@ -177,7 +177,7 @@ def main(args=None):
     fields will be processed.
     """
     if args.log_to_file:
-        logging.basicConfig(filename=args.log_file, level=logging.INFO)
+        logging.basicConfig(filename=args.log_file, level=logging.DEBUG)
 
     sar_urls0 = get_sar(time=datetime.datetime.fromisoformat(args.time), dt=args.delta)
     processed_urls = ""
