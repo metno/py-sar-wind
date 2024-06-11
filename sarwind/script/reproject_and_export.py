@@ -46,12 +46,6 @@ def create_parser():
         help="Metadata ID of parent dataset."
     )
     parser.add_argument(
-        "--nc_target_path", type=str, default=".",
-        help="Target path for the CF-NetCDF files if they need to be "
-             "moved to another storage place than the given output "
-             "path (default is the current directory)."
-    )
-    parser.add_argument(
         "--odap_target_url", type=str, default=None,
         help="Root folder of the OPeNDAP target url."
     )
@@ -146,7 +140,7 @@ def main(args=None):
 
     logging.info("Reprojected wind field stored as %s" % filename)
 
-    statusm, msgm = export_mmd(filename, args.nc_target_path, args.odap_target_url,
+    statusm, msgm = export_mmd(filename, args.output_path, args.odap_target_url,
                                parent_mmd=args.parent_mmd)
 
 
