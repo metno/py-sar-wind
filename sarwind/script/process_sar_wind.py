@@ -137,7 +137,7 @@ def process_with_arome(url, arome, path):
     return process(url, arome, path, "_AROMEARCTIC.nc")
 
 
-def export_mmd(nc_file, target_path, base_url, parent_mmd=None):
+def export_mmd(nc_file, target_path, base_url, **kwargs):
     """Export metadata to MMD.
 
     Input
@@ -165,7 +165,7 @@ def export_mmd(nc_file, target_path, base_url, parent_mmd=None):
     pp.mkdir(exist_ok=True, parents=True)
     md = Nc_to_mmd(nc_file, opendap_url=url, output_file=xml_out,
                    target_nc_filename=target_fn)
-    status, msg = md.to_mmd(parent=parent_mmd)
+    status, msg = md.to_mmd(kwargs)
 
     return status, xml_out
 
@@ -210,14 +210,14 @@ def main(args=None):
             logging.info("Processed %s:%s" % (url, fnm))
             if args.export_mmd:
                 statusm, msgm = export_mmd(fnm, args.nc_target_path, args.odap_target_url,
-                                           parent_mmd=args.parent_mmd)
+                                           parent=args.parent_mmd)
             with open(args.processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, meps, fnm))
         if fna is not None:
             logging.info("Processed %s:%s" % (url, fna))
             if args.export_mmd:
                 statusa, msga = export_mmd(fna, args.nc_target_path, args.odap_target_url,
-                                           parent_mmd=args.parent_mmd)
+                                           parent=args.parent_mmd)
             with open(args.processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, arome, fna))
         count += 1

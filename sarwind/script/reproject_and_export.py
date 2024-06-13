@@ -57,6 +57,9 @@ def create_parser():
         "--log_file", type=str, default="process-sar-wind.log",
         help="Log file name."
     )
+    parser.add_argument(
+        "--wms_base_url", type=str, default=None,
+        help
 
     return parser
 
@@ -94,18 +97,18 @@ def main(args=None):
     day = f"{time.day:02d}"
     pp = Path(os.path.join(args.output_path, year, month, day))
     pp.mkdir(exist_ok=True, parents=True)
-    filename = os.path.join(args.output_path, year, month, day,
-                            "reprojected_" + os.path.basename(args.sarwind))
-    if os.path.isfile(filename):
-        logging.debug("%s already exists" % filename)
+    filename = "reprojected_" + os.path.basename(args.sarwind)
+    full_path = os.path.join(args.output_path, year, month, day, filename)
+    if os.path.isfile(full_path):
+        logging.debug("%s already exists" % full_path)
         return
 
     # Export
-    n.export2thredds(filename, time=time)
+    n.export2thredds(full_path, time=time)
     created = datetime.datetime.now(pytz.timezone("utc")).isoformat()
 
     # Copy and update metadata
-    ds = netCDF4.Dataset(filename, "a")
+    ds = netCDF4.Dataset(full_path, "a")
     # Make new metadata ID
     metadata["id"] = str(uuid.uuid4())
     # Set new date_created
@@ -138,11 +141,21 @@ def main(args=None):
     ds.setncatts(metadata)
     ds.close()
 
-    logging.info("Reprojected wind field stored as %s" % filename)
+    logging.info("Reprojected wind field stored as %s" % full_path)
 
-    statusm, msgm = export_mmd(filename, args.output_path, args.odap_target_url,
-                               parent_mmd=args.parent_mmd)
+    add_wms = False
+    wms_layers = None
+    wms_url = None
+    import ipdb
+    ipdb.set_trace()
+    if args.wms_base_url is not None:
+        add_wms = True
+        wms_layers = ["windspeed"]
+        wms_url = os.path.join(args.wms_base_url, year, month, day, filename)
 
+    statusm, msgm = export_mmd(full_path, args.output_path, args.odap_target_url,
+                               parent=args.parent_mmd, add_wms_data_access=add_wms,
+                               wms_link=wms_url, wms_layer_names=wms_layers)
 
 def _main():  # pragma: no cover
     main(create_parser().parse_args())  # entry point in setup.cfg
