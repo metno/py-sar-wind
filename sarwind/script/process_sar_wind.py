@@ -72,12 +72,14 @@ def create_parser():
         "--parent_mmd", type=str, default=None,
         help="Metadata ID of parent dataset."
     )
-    parser.add_argument(
-        "--nc_target_path", type=str, default=".",
-        help="Target path for the CF-NetCDF files if they need to be "
-             "moved to another storage place than the given output "
-             "path (default is the current directory)."
-    )
+    # # This option requires a new version of py-mmd-tools
+    # # (https://github.com/metno/py-mmd-tools/pull/329):
+    # parser.add_argument(
+    #     "--nc_target_path", type=str, default=".",
+    #     help="Target path for the CF-NetCDF files if they need to be "
+    #          "moved to another storage place than the given output "
+    #          "path (default is the current directory)."
+    # )
     parser.add_argument(
         "--odap_target_url", type=str, default=None,
         help="Root folder of the OPeNDAP target url."
@@ -137,7 +139,7 @@ def process_with_arome(url, arome, path):
     return process(url, arome, path, "_AROMEARCTIC.nc")
 
 
-def export_mmd(nc_file, target_path, base_url, **kwargs):
+def export_mmd(nc_file, base_url, **kwargs):
     """Export metadata to MMD.
 
     Input
@@ -155,7 +157,6 @@ def export_mmd(nc_file, target_path, base_url, **kwargs):
     #       (see https://github.com/metno/py-mmd-tools/issues/319)
     pp = nc_file.split("/")
     url = os.path.join(base_url, pp[-4], pp[-3], pp[-2], pp[-1])
-    target_fn = os.path.join(target_path, pp[-4], pp[-3], pp[-2], pp[-1])
     if len(pp) > 4:
         folder = "/".join(pp[:-4])
     else:
@@ -163,8 +164,7 @@ def export_mmd(nc_file, target_path, base_url, **kwargs):
     xml_out = os.path.join(folder, "mmd", pp[-4], pp[-3], pp[-2], pp[-1][:-2]+"xml")
     pp = Path(os.path.dirname(xml_out))
     pp.mkdir(exist_ok=True, parents=True)
-    md = Nc_to_mmd(nc_file, opendap_url=url, output_file=xml_out,
-                   target_nc_filename=target_fn)
+    md = Nc_to_mmd(nc_file, opendap_url=url, output_file=xml_out)
     status, msg = md.to_mmd(kwargs)
 
     return status, xml_out
@@ -209,15 +209,13 @@ def main(args=None):
         if fnm is not None:
             logging.info("Processed %s:%s" % (url, fnm))
             if args.export_mmd:
-                statusm, msgm = export_mmd(fnm, args.nc_target_path, args.odap_target_url,
-                                           parent=args.parent_mmd)
+                statusm, msgm = export_mmd(fnm, args.odap_target_url, parent=args.parent_mmd)
             with open(args.processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, meps, fnm))
         if fna is not None:
             logging.info("Processed %s:%s" % (url, fna))
             if args.export_mmd:
-                statusa, msga = export_mmd(fna, args.nc_target_path, args.odap_target_url,
-                                           parent=args.parent_mmd)
+                statusa, msga = export_mmd(fna, args.odap_target_url, parent=args.parent_mmd)
             with open(args.processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, arome, fna))
         count += 1

@@ -95,10 +95,14 @@ def testProcess_sar_wind_export_mmd(monkeypatch, mock_nansat):
     with monkeypatch.context() as mp:
         mp.setattr(Nc_to_mmd, "__init__", lambda *a, **k: None)
         mp.setattr(Nc_to_mmd, "to_mmd", lambda *a, **k: (True, expected_mmd_fn0))
-        status, msg = export_mmd(nc_file0, os.path.join("/lustre/path/", nc_file0), base_url)
+        # This requires https://github.com/metno/py-mmd-tools/pull/329
+        # status, msg = export_mmd(nc_file0, os.path.join("/lustre/path/", nc_file0), base_url)
+        status, msg = export_mmd(nc_file0, base_url)
         assert msg == expected_mmd_fn0
         mp.setattr(Nc_to_mmd, "to_mmd", lambda *a, **k: (True, expected_mmd_fn1))
-        status, msg = export_mmd(nc_file1, os.path.join("/lustre/path/", nc_file1), base_url)
+        # This requires https://github.com/metno/py-mmd-tools/pull/329
+        # status, msg = export_mmd(nc_file1, os.path.join("/lustre/path/", nc_file1), base_url)
+        status, msg = export_mmd(nc_file1, base_url)
         assert msg == expected_mmd_fn1
 
 
