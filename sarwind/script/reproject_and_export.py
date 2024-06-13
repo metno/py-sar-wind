@@ -152,7 +152,7 @@ def main(args=None):
         wms_layers = ["windspeed"]
         wms_url = os.path.join(args.wms_base_url, year, month, day, filename)
 
-    statusm, msgm = export_mmd(full_path, args.output_path, args.odap_target_url,
+    statusm, msgm = export_mmd(full_path, args.odap_target_url,
                                parent=args.parent_mmd, add_wms_data_access=add_wms,
                                wms_link=wms_url, wms_layer_names=wms_layers)
 
