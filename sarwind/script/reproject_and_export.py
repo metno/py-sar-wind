@@ -147,8 +147,6 @@ def main(args=None):
     add_wms = False
     wms_layers = None
     wms_url = None
-    import ipdb
-    ipdb.set_trace()
     if args.wms_base_url is not None:
         add_wms = True
         wms_layers = ["windspeed"]
