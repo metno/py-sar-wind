@@ -59,7 +59,8 @@ def create_parser():
     )
     parser.add_argument(
         "--wms_base_url", type=str, default=None,
-        help
+        help="Base of OGC WMS url."
+    )
 
     return parser
 
@@ -156,6 +157,7 @@ def main(args=None):
     statusm, msgm = export_mmd(full_path, args.output_path, args.odap_target_url,
                                parent=args.parent_mmd, add_wms_data_access=add_wms,
                                wms_link=wms_url, wms_layer_names=wms_layers)
+
 
 def _main():  # pragma: no cover
     main(create_parser().parse_args())  # entry point in setup.cfg
