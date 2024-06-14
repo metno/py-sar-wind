@@ -102,47 +102,46 @@ def main(args=None):
     full_path = os.path.join(args.output_path, year, month, day, filename)
     if os.path.isfile(full_path):
         logging.debug("%s already exists" % full_path)
-        return
+    else:
+        # Export
+        n.export2thredds(full_path, time=time)
+        created = datetime.datetime.now(pytz.timezone("utc")).isoformat()
 
-    # Export
-    n.export2thredds(full_path, time=time)
-    created = datetime.datetime.now(pytz.timezone("utc")).isoformat()
+        # Copy and update metadata
+        ds = netCDF4.Dataset(full_path, "a")
+        # Make new metadata ID
+        metadata["id"] = str(uuid.uuid4())
+        # Set new date_created
+        metadata["date_created"] = created
+        # Change title
+        metadata["title"] = "Map projected s" + title[1:]
+        metadata["title_no"] = "Kartprojisert o" + title_no[1:]
+        # Change summary
+        metadata["summary"] = "Map projected s" + summary[1:]
+        metadata["summary_no"] = "Kartprojisert o" + summary_no[1:]
+        # Update history
+        metadata["history"] = history + "\n%s: reproject to %s grid mapping" % (
+            created, ds["windspeed"].grid_mapping)
 
-    # Copy and update metadata
-    ds = netCDF4.Dataset(full_path, "a")
-    # Make new metadata ID
-    metadata["id"] = str(uuid.uuid4())
-    # Set new date_created
-    metadata["date_created"] = created
-    # Change title
-    metadata["title"] = "Map projected s" + title[1:]
-    metadata["title_no"] = "Kartprojisert o" + title_no[1:]
-    # Change summary
-    metadata["summary"] = "Map projected s" + summary[1:]
-    metadata["summary_no"] = "Kartprojisert o" + summary_no[1:]
-    # Update history
-    metadata["history"] = history + "\n%s: reproject to %s grid mapping" % (
-        created, ds["windspeed"].grid_mapping)
+        # Remove not needed metadata
+        ds.delncattr("NANSAT_GeoTransform")
+        ds.delncattr("NANSAT_Projection")
+        ds.delncattr("filename")
+        ds["swathmask"].delncattr("wkv")
+        ds["swathmask"].delncattr("colormap")
+        ds["swathmask"].delncattr("PixelFunctionType")
 
-    # Remove not needed metadata
-    ds.delncattr("NANSAT_GeoTransform")
-    ds.delncattr("NANSAT_Projection")
-    ds.delncattr("filename")
-    ds["swathmask"].delncattr("wkv")
-    ds["swathmask"].delncattr("colormap")
-    ds["swathmask"].delncattr("PixelFunctionType")
+        # Remove wrong metadata
+        ds["swathmask"].delncattr("standard_name")
 
-    # Remove wrong metadata
-    ds["swathmask"].delncattr("standard_name")
+        # Remove old history
+        ds.delncattr("history")
 
-    # Remove old history
-    ds.delncattr("history")
+        # Add metadata to nc-file
+        ds.setncatts(metadata)
+        ds.close()
 
-    # Add metadata to nc-file
-    ds.setncatts(metadata)
-    ds.close()
-
-    logging.info("Reprojected wind field stored as %s" % full_path)
+        logging.info("Reprojected wind field stored as %s" % full_path)
 
     add_wms = False
     wms_layers = None
@@ -155,6 +154,10 @@ def main(args=None):
     statusm, msgm = export_mmd(full_path, args.odap_target_url,
                                parent=args.parent_mmd, add_wms_data_access=add_wms,
                                wms_link=wms_url, wms_layer_names=wms_layers)
+    if statusm:
+        logging.info("Created MMD file: {:s}".format(msgm))
+    else:
+        logging.info("Could not create MMD file. {:s}".format(msgm))
 
 
 def _main():  # pragma: no cover
