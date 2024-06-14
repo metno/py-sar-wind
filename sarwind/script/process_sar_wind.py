@@ -139,7 +139,7 @@ def process_with_arome(url, arome, path):
     return process(url, arome, path, "_AROMEARCTIC.nc")
 
 
-def export_mmd(nc_file, base_url, **kwargs):
+def export_mmd(nc_file, base_url, collection="METNCS", **kwargs):
     """Export metadata to MMD.
 
     Input
@@ -165,7 +165,7 @@ def export_mmd(nc_file, base_url, **kwargs):
     pp = Path(os.path.dirname(xml_out))
     pp.mkdir(exist_ok=True, parents=True)
     md = Nc_to_mmd(nc_file, opendap_url=url, output_file=xml_out)
-    status, msg = md.to_mmd(kwargs)
+    status, msg = md.to_mmd(collection=collection, **kwargs)
 
     return status, xml_out
 
