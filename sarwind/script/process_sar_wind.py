@@ -174,6 +174,7 @@ def main(args=None):
     process_sar_wind(args.time, args.delta, args.processed_files, args.swath_path, args.export_mmd,
                      args.odap_target_url, args.parent_mmd, args.log_to_file, args.log_file)
 
+
 def process_sar_wind(time, delta, processed_files, swath_path, export_mmd=False,
                      odap_target_url=None, parent_mmd=None, log_to_file=False, log_file=None):
     """Run tools to process wind from SAR. Currently MEPS and

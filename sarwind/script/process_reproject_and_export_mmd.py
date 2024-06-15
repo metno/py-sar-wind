@@ -19,6 +19,7 @@ from sarwind.sarwind import SARWind
 from sarwind.search_and_collocate import get_sar
 from sarwind.search_and_collocate import collocate
 
+
 def create_parser():
     parser = argparse.ArgumentParser(
         description="Process wind from SAR NRCS and forecast model "
@@ -81,5 +82,3 @@ def create_parser():
     )
 
     return parser
-
-
