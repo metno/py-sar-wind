@@ -60,7 +60,7 @@ def create_parser():
              "time."
     )
     parser.add_argument(
-        "-o", "--output_path", type=str, default=".",
+        "-o", "--swath_path", type=str, default=".",
         help="Output path of resulting CF-NetCDF file (default is the"
              " current directory)."
     )
@@ -171,18 +171,23 @@ def export_mmd(nc_file, base_url, collection="METNCS", **kwargs):
 
 
 def main(args=None):
+    process_sar_wind(args.time, args.delta, args.processed_files, args.swath_path, args.export_mmd,
+                     args.odap_target_url, args.parent_mmd, args.log_to_file, args.log_file)
+
+def process_sar_wind(time, delta, processed_files, swath_path, export_mmd=False,
+                     odap_target_url=None, parent_mmd=None, log_to_file=False, log_file=None):
     """Run tools to process wind from SAR. Currently MEPS and
     AROME-ARCTIC weather forecast models are used for wind directions.
     If a SAR image overlaps with both model domains, two SAR wind
     fields will be processed.
     """
-    if args.log_to_file:
-        logging.basicConfig(filename=args.log_file, level=logging.DEBUG)
+    if log_to_file:
+        logging.basicConfig(filename=log_file, level=logging.DEBUG)
 
-    sar_urls0 = get_sar(time=datetime.datetime.fromisoformat(args.time), dt=args.delta)
+    sar_urls0 = get_sar(time=datetime.datetime.fromisoformat(time), dt=delta)
     processed_urls = ""
-    if os.path.isfile(args.processed_files):
-        with open(args.processed_files, "r") as fp:
+    if os.path.isfile(processed_files):
+        with open(processed_files, "r") as fp:
             lines = fp.readlines()
         for line in lines:
             if "Processed" in line:
@@ -203,20 +208,20 @@ def main(args=None):
             continue
         meps, arome = collocate(url)
         if meps is not None:
-            fnm = process_with_meps(url, meps, args.output_path)
+            fnm = process_with_meps(url, meps, swath_path)
         if arome is not None:
-            fna = process_with_arome(url, arome, args.output_path)
+            fna = process_with_arome(url, arome, swath_path)
         if fnm is not None:
             logging.info("Processed %s:%s" % (url, fnm))
-            if args.export_mmd:
-                statusm, msgm = export_mmd(fnm, args.odap_target_url, parent=args.parent_mmd)
-            with open(args.processed_files, "a") as fp:
+            if export_mmd:
+                statusm, msgm = export_mmd(fnm, odap_target_url, parent=parent_mmd)
+            with open(processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, meps, fnm))
         if fna is not None:
             logging.info("Processed %s:%s" % (url, fna))
-            if args.export_mmd:
-                statusa, msga = export_mmd(fna, args.odap_target_url, parent=args.parent_mmd)
-            with open(args.processed_files, "a") as fp:
+            if export_mmd:
+                statusa, msga = export_mmd(fna, odap_target_url, parent=parent_mmd)
+            with open(processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, arome, fna))
         count += 1
         logging.info("%d/%d done" % (count, len(sar_urls)))
