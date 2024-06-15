@@ -139,7 +139,7 @@ def process_with_arome(url, arome, path):
     return process(url, arome, path, "_AROMEARCTIC.nc")
 
 
-def export_mmd(nc_file, base_url, collection="METNCS", **kwargs):
+def export_metadata(nc_file, base_url, collection="METNCS", **kwargs):
     """Export metadata to MMD.
 
     Input
@@ -214,13 +214,13 @@ def process_sar_wind(time, delta, processed_files, swath_path, export_mmd=False,
         if fnm is not None:
             logging.info("Processed %s:%s" % (url, fnm))
             if export_mmd:
-                statusm, msgm = export_mmd(fnm, odap_target_url, parent=parent_mmd)
+                statusm, msgm = export_metadata(fnm, odap_target_url, parent=parent_mmd)
             with open(processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, meps, fnm))
         if fna is not None:
             logging.info("Processed %s:%s" % (url, fna))
             if export_mmd:
-                statusa, msga = export_mmd(fna, odap_target_url, parent=parent_mmd)
+                statusa, msga = export_metadata(fna, odap_target_url, parent=parent_mmd)
             with open(processed_files, "a") as fp:
                 fp.write("Processed %s and %s: %s\n\n" % (url, arome, fna))
         count += 1
