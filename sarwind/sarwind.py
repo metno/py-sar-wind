@@ -36,6 +36,14 @@ class SARWind(Nansat, object):
         Resampling algorithm used for reprojecting the wind field to
         the SAR image. See nansat.nansat.reproject.
     """
+    @classmethod
+    def from_wind_nc_product(cls, filename):
+        """Initialize SARWind object from an existing CF-NetCDF
+        product.
+        """
+        self = cls.__new__(cls)
+        super(SARWind, self).__init__(filename=filename)
+        return self
 
     def __init__(self, sar_image, wind, pixelsize=500, resample_alg=1, max_diff_minutes=30,
                  *args, **kwargs):
@@ -325,28 +333,50 @@ class SARWind(Nansat, object):
         return np.mod(180. + np.arctan2(u, v) * 180./np.pi, 360)
 
     def export(self, filename=None, bands=None, metadata=None, to_thredds=False, *args, **kwargs):
-        """ Export dataset to NetCDF-CF and add metadata.
+        """ Export dataset with only wind data to NetCDF-CF, and add
+        custom metadata.
         """
+        if metadata is None:
+            # Necessary to avoid problems when export2thredds calls
+            # export..
+            super().export(filename, bands=bands, *args, **kwargs)
+            return
+
         if filename is None:
             filename = self.filename.split("/")[-1].split(".")[0] + "_wind.nc"
-        if metadata is None:
-            metadata = self.set_get_standard_metadata()
-
-        bands = kwargs.pop("bands", None)
         if bands is None:
             bands = [
-                self.get_band_number("longitude"),
-                self.get_band_number("latitude"),
                 self.get_band_number("wind_direction"),
                 self.get_band_number("look_relative_wind_direction"),
                 self.get_band_number("windspeed"),
                 self.get_band_number("model_windspeed"),
             ]
+            if not to_thredds:
+                if bool(self.has_band("longitude")):
+                    bands.append(self.get_band_number("longitude"))
+                if bool(self.has_band("latitude")):
+                    bands.append(self.get_band_number("latitude"))
+
+        metadata = self.set_get_standard_metadata(new_metadata=metadata.copy())
 
         # Export with Nansat
         if to_thredds:
-            super().export2thredds(
-                filename, time=datetime.datetime.fromisoformat(metadata["time_coverage_start"]))
+            bands_dict = {}
+            for band in bands:
+                mm = self.get_metadata(band_id=band)
+                mm.pop("SourceBand", "")
+                mm.pop("SourceFilename", "")
+                mm.pop("wkv", "")
+                mm["dataType"] = 6
+                name = mm.pop("name")
+                bands_dict[name] = mm
+            bands_dict["windspeed"]["colormap"]= "cmocean.cm.speed"
+            bands_dict["model_windspeed"]["colormap"]= "cmocean.cm.speed"
+            bands_dict["wind_direction"]["colormap"]= "cmocean.cm.phase"
+            bands_dict["look_relative_wind_direction"]["colormap"]= "cmocean.cm.phase"
+            super().export2thredds(filename, bands=bands_dict,
+                                   time=datetime.datetime.fromisoformat(
+                                       metadata["time_coverage_start"]))
         else:
             super().export(filename, bands=bands, add_geolocation=False, add_gcps=False, *args,
                            **kwargs)
@@ -367,8 +397,7 @@ class SARWind(Nansat, object):
             nc_ds.setncatts(metadata)
 
         # Clean variable metadata
-        md_rm = ["colormap", "minmax", "dataType", "SourceBand", "SourceFilename", "wkv",
-                 "PixelFunctionType"]
+        md_rm = ["dataType", "SourceBand", "SourceFilename", "wkv", "PixelFunctionType"]
         for key in nc_ds.variables.keys():
             for md_key in md_rm:
                 if md_key in nc_ds[key].ncattrs():
@@ -391,7 +420,16 @@ class SARWind(Nansat, object):
         model.crop_lonlat([lon.min(), lon.max()], [lat.min(), lat.max()])
         model.resize(pixelsize=np.round(
             (self.get_pixelsize_meters()[0]+self.get_pixelsize_meters()[1])/2.), resample_alg=0)
+        metadata = self.get_metadata()
+        self.vrt.dataset.SetMetadata({})
         self.reproject(model)
+        # Update history
+        time = datetime.datetime.utcnow().replace(tzinfo=pytz.timezone("utc")).isoformat()
+        new_proj = model.get_metadata(band_id=model.get_band_number(
+            {"standard_name": "wind_speed"}))["grid_mapping"]
+        metadata["history"] = (metadata["history"] +
+                               "\n{:s}: reproject to {:s} grid mapping".format(time, new_proj))
+        self.vrt.dataset.SetMetadata(metadata)
 
     def set_get_standard_metadata(self, new_metadata=None):
         """Set standard CF and ACDD metadata with MET Norway
@@ -402,6 +440,9 @@ class SARWind(Nansat, object):
             new_metadata = {}
         # Get metadata
         old_metadata = self.get_metadata()
+
+        if len(old_metadata.keys()) == 1:
+            return old_metadata
 
         t0 = datetime.datetime.fromisoformat(
             old_metadata["time_coverage_start"].replace("Z", "+00:00")
@@ -441,7 +482,8 @@ class SARWind(Nansat, object):
         conv = "Conventions"
         metadata[conv] = check_replace(conv, new_metadata, "CF-1.10, ACDD-1.3")
         hist = "history"
-        metadata[hist] = check_replace(hist, new_metadata, old_metadata["swhistory"])
+        old_hist = old_metadata.pop("swhistory", old_metadata.pop("history"))
+        metadata[hist] = check_replace(hist, new_metadata, old_hist)
 
         """Set global ACDD metadata.
         """
@@ -500,10 +542,10 @@ class SARWind(Nansat, object):
         kw = "keywords"
         metadata[kw] = check_replace(
             kw, new_metadata,
-            "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > SURFACE WINDS > WIND SPEED, "
-            "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > WIND STRESS, "
-            "GEMET: Atmospheric conditions, "
-            "NORTHEMES: Vær og klima")
+            "GCMDSK:EARTH SCIENCE > OCEANS > OCEAN WINDS > SURFACE WINDS > WIND SPEED, "
+            "GCMDSK:EARTH SCIENCE > OCEANS > OCEAN WINDS > WIND STRESS, "
+            "GEMET:Atmospheric conditions, "
+            "NORTHEMES:Vær og klima")
         kw_voc = "keywords_vocabulary"
         metadata[kw_voc] = check_replace(
             kw_voc, new_metadata,
