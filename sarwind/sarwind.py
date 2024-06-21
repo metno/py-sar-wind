@@ -36,6 +36,14 @@ class SARWind(Nansat, object):
         Resampling algorithm used for reprojecting the wind field to
         the SAR image. See nansat.nansat.reproject.
     """
+    @classmethod
+    def from_wind_nc_product(cls, filename):
+        """Initialize SARWind object from an existing CF-NetCDF
+        product.
+        """
+        self = cls.__new__(cls)
+        super(SARWind, self).__init__(filename=filename)
+        return self
 
     def __init__(self, sar_image, wind, pixelsize=500, resample_alg=1, max_diff_minutes=30,
                  *args, **kwargs):
@@ -324,41 +332,118 @@ class SARWind(Nansat, object):
         """
         return np.mod(180. + np.arctan2(u, v) * 180./np.pi, 360)
 
-    def export(self, bands=None, *args, **kwargs):
-        """ Export dataset to NetCDF-CF and add metadata.
+    def export(self, filename=None, bands=None, metadata=None, to_thredds=False, *args, **kwargs):
+        """ Export dataset with only wind data to NetCDF-CF, and add
+        custom metadata.
         """
-        if "filename" not in kwargs.keys():
-            filename = self.filename.split("/")[-1].split(".")[0] + "_wind.nc"
-            kwargs["filename"] = filename
-        else:
-            filename = kwargs["filename"]
+        if metadata is None:
+            # Necessary to avoid problems when export2thredds calls
+            # export..
+            super().export(filename, bands=bands, *args, **kwargs)
+            return
 
-        bands = kwargs.pop("bands", None)
+        if filename is None:
+            filename = self.filename.split("/")[-1].split(".")[0] + "_wind.nc"
+
         if bands is None:
             bands = [
-                self.get_band_number("longitude"),
-                self.get_band_number("latitude"),
                 self.get_band_number("wind_direction"),
                 self.get_band_number("look_relative_wind_direction"),
                 self.get_band_number("windspeed"),
                 self.get_band_number("model_windspeed"),
             ]
+            if not to_thredds:
+                if bool(self.has_band("longitude")):
+                    bands.append(self.get_band_number("longitude"))
+                if bool(self.has_band("latitude")):
+                    bands.append(self.get_band_number("latitude"))
 
-        # Get image boundary
-        lon, lat = self.get_border()
-        boundary = "POLYGON (("
-        for la, lo in list(zip(lat, lon)):
-            boundary += "%.2f %.2f, " % (la, lo)
-        boundary = boundary[:-2]+"))"
+        metadata = self.set_get_standard_metadata(new_metadata=metadata.copy())
 
         # Export with Nansat
-        super().export(bands=bands, add_geolocation=False, add_gcps=False, *args, **kwargs)
+        if to_thredds:
+            bands_dict = {}
+            for band in bands:
+                mm = self.get_metadata(band_id=band)
+                mm.pop("SourceBand", "")
+                mm.pop("SourceFilename", "")
+                mm.pop("wkv", "")
+                mm["dataType"] = 6
+                name = mm.pop("name")
+                bands_dict[name] = mm
+            bands_dict["windspeed"]["colormap"] = "cmocean.cm.speed"
+            bands_dict["model_windspeed"]["colormap"] = "cmocean.cm.speed"
+            bands_dict["wind_direction"]["colormap"] = "cmocean.cm.phase"
+            bands_dict["look_relative_wind_direction"]["colormap"] = "cmocean.cm.phase"
+            super().export2thredds(filename, bands=bands_dict,
+                                   time=datetime.datetime.fromisoformat(
+                                       metadata["time_coverage_start"]))
+        else:
+            super().export(filename, bands=bands, add_geolocation=False, add_gcps=False, *args,
+                           **kwargs)
 
-        # TODO: Move below code out of the application
-        ####
+        # Pop empty metadata
+        pop_keys = []
+        for key, val in metadata.items():
+            if val == "":
+                pop_keys.append(key)
+        for key in pop_keys:
+            metadata.pop(key)
 
+        # Set metadata from dict
+        nc_ds = netCDF4.Dataset(filename, "a")
+        if metadata is not None:
+            for att in nc_ds.ncattrs():
+                nc_ds.delncattr(att)
+            nc_ds.setncatts(metadata)
+
+        # Clean variable metadata
+        md_rm = ["dataType", "SourceBand", "SourceFilename", "wkv", "PixelFunctionType"]
+        for key in nc_ds.variables.keys():
+            for md_key in md_rm:
+                if md_key in nc_ds[key].ncattrs():
+                    nc_ds[key].delncattr(md_key)
+
+        # Remove wrong metadata
+        swath_mask_band = "swathmask"
+        sn = "standard_name"
+        if swath_mask_band in nc_ds.ncattrs():
+            if sn in nc_ds[swath_mask_band].ncattrs():
+                nc_ds["swathmask"].delncattr(sn)
+
+        nc_ds.close()
+
+    def to_model_projection(self):
+        """Reproject SAR wind field dataset to model grid mapping.
+        """
+        lon, lat = self.get_corners()
+        model = Nansat(self.get_metadata("wind_filename"))
+        model.crop_lonlat([lon.min(), lon.max()], [lat.min(), lat.max()])
+        model.resize(pixelsize=np.round(
+            (self.get_pixelsize_meters()[0]+self.get_pixelsize_meters()[1])/2.), resample_alg=0)
+        metadata = self.get_metadata()
+        self.vrt.dataset.SetMetadata({})
+        self.reproject(model)
+        # Update history
+        time = datetime.datetime.utcnow().replace(tzinfo=pytz.timezone("utc")).isoformat()
+        new_proj = model.get_metadata(band_id=model.get_band_number(
+            {"standard_name": "wind_speed"}))["grid_mapping"]
+        metadata["history"] = metadata["history"] + \
+            "\n{:s}: reproject to {:s} grid mapping".format(time, new_proj)
+        self.vrt.dataset.SetMetadata(metadata)
+
+    def set_get_standard_metadata(self, new_metadata=None):
+        """Set standard CF and ACDD metadata with MET Norway
+        extensions in a dictionary. Replace by values provided in
+        new_metadata, if provided. Return the new dictionary.
+        """
+        if new_metadata is None:
+            new_metadata = {}
         # Get metadata
         old_metadata = self.get_metadata()
+
+        if len(old_metadata.keys()) == 1:
+            return old_metadata
 
         t0 = datetime.datetime.fromisoformat(
             old_metadata["time_coverage_start"].replace("Z", "+00:00")
@@ -375,100 +460,145 @@ class SARWind(Nansat, object):
             "S1B": ["Sentinel-1B", "SAR-C"],
         }
 
-        # Set global CF metadata
-        metadata = {}
-        metadata["Conventions"] = "CF-1.10, ACDD-1.3"
-        metadata["history"] = old_metadata["swhistory"]
+        def check_replace(key, in_dict, default_value):
+            """Check if key is in in_dict. Return its value if it is
+            there, otherwise return the provided default value.
+            """
+            if key in in_dict:
+                return in_dict[key]
+            else:
+                return default_value
 
-        # Set global ACDD metadata
-        metadata["id"] = str(uuid.uuid4())
-        metadata["naming_authority"] = "no.met"
-        metadata["date_created"] = datetime.datetime.utcnow().replace(
-            tzinfo=pytz.timezone("utc")).isoformat()
-        metadata["title"] = ("Sea surface wind (10 m above sea level) estimated from %s NRCS, "
-                             "acquired on %s") % (
-            platforms[sar_filename[:3]][0], t0.strftime("%Y-%m-%d %H:%M:%S UTC"))
-        metadata["title_no"] = "Overflatevind (10 moh) utledet fra %s NRCS %s" % (
-            platforms[sar_filename[:3]][0],
-            t0.strftime("%Y-%m-%d %H:%M:%S UTC"))
-        metadata["summary"] = ("Surface wind speed (10 m above sea level) calculated from C-band "
-                               "Synthetic Aperture Radar (SAR) Normalized Radar Cross Section "
-                               "(NRCS) and model forecast wind, using CMOD5n. The wind speed is "
-                               "calculated for neutrally stable conditions and is "
-                               "equivalent to the wind stress.")
-        metadata["summary_no"] = ("Overflatevind (10 moh) beregnet fra SAR C-bånd "
-                                  "tilbakespredning og vindretning fra varslingsmodell, ved "
-                                  "bruk av CMOD5n. Vindhastigheten er beregnet under antagelse av"
-                                  " nøytral atmosfærestabilitet, og er representativ for "
-                                  "vindstress.")
+        # Get image boundary
+        lon, lat = self.get_border()
+        boundary = "POLYGON (("
+        for la, lo in list(zip(lat, lon)):
+            boundary += "%.2f %.2f, " % (la, lo)
+        boundary = boundary[:-2]+"))"
+
+        """Set global CF metadata.
+        """
+        metadata = {}
+        # This can be changed by the user:
+        conv = "Conventions"
+        metadata[conv] = check_replace(conv, new_metadata, "CF-1.10, ACDD-1.3")
+        hist = "history"
+        old_hist = old_metadata.pop("swhistory", old_metadata.pop("history"))
+        metadata[hist] = check_replace(hist, new_metadata, old_hist)
+
+        """Set global ACDD metadata.
+        """
+        # This is not negotiable:
         metadata["time_coverage_start"] = t0iso
+        metadata["time_coverage_end"] = t1iso
         metadata["geospatial_lat_max"] = "%.2f" % lat.max()
         metadata["geospatial_lat_min"] = "%.2f" % lat.min()
         metadata["geospatial_lon_max"] = "%.2f" % lon.max()
         metadata["geospatial_lon_min"] = "%.2f" % lon.min()
-        metadata["license"] = "https://spdx.org/licenses/CC-BY-4.0 (CC-BY-4.0)"
-        metadata["keywords"] = (
-            "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > SURFACE WINDS > WIND SPEED, "
-            "GCMDSK: EARTH SCIENCE > OCEANS > OCEAN WINDS > WIND STRESS, "
-            "GEMET: Atmospheric conditions, "
-            "NORTHEMES: Vær og klima")
-        metadata["keywords_vocabulary"] = (
-            "GCMDSK:GCMD Science Keywords:https://vocab.met.no/GCMDSK, "
-            "GEMET:INSPIRE Themes:http://inspire.ec.europa.eu/theme, "
-            "NORTHEMES:GeoNorge Themes:https://register.geonorge.no/metadata-kodelister/"
-            "nasjonal-temainndeling")
-
-        metadata["publisher_type"] = "institution"
-        metadata["publisher_email"] = "data-management-group@met.no"
-        metadata["time_coverage_end"] = t1iso
         metadata["geospatial_bounds"] = boundary
-        metadata["processing_level"] = "Operational"
-        metadata["contributor_role"] = "Technical contact"
-        metadata["creator_name"] = "Morten Wergeland Hansen"
-        metadata["contributor_name"] = "Frode Dinessen"
-        metadata["creator_type"] = "person"
-        metadata["creator_email"] = "mortenwh@met.no"
-        metadata["creator_institution"] = "Norwegian Meteorological Institute (MET Norway)"
-        metadata["institution"] = "Norwegian Meteorological Institute (MET Norway)"
-        metadata["publisher_url"] = "https://www.met.no/"
-        metadata["references"] = "https://doi.org/10.1029/2006JC003743 (Scientific publication)"
-        metadata["project"] = ("SIOS – Infrastructure development of the Norwegian node "
-                               "(SIOS-InfraNor)")
         metadata["platform"] = platforms[sar_filename[:3]][0]
         metadata["platform_vocabulary"] = "https://vocab.met.no/mmd/Platform/Sentinel-1A"
         metadata["instrument"] = platforms[sar_filename[:3]][1]
         metadata["instrument_vocabulary"] = "https://vocab.met.no/mmd/Instrument/SAR-C"
         metadata["source"] = "Space Borne Instrument"
-        metadata["publisher_name"] = "Norwegian Meteorological Institute"
-
         metadata["spatial_representation"] = "grid"
-        metadata["dataset_production_status"] = "Complete"
-        metadata["access_constraint"] = "Open"
-        metadata["contributor_email"] = "froded@met.no"
-        metadata["contributor_institution"] = "Norwegian Meteorological Institute (MET Norway)"
-        if "related_dataset" in old_metadata.keys():
-            metadata["related_dataset"] = old_metadata["related_dataset"]
-        metadata["iso_topic_category"] = "climatologyMeteorologyAtmosphere"
-        metadata["quality_control"] = "No quality control"
-
-        # Correct filename metadata
-        metadata.pop("filename", "")
-
-        # Add filenames of datasets used for CMOD calculation
         metadata["wind_filename"] = old_metadata["wind_filename"]
         metadata["sar_filename"] = old_metadata["sar_filename"]
+        metadata["iso_topic_category"] = "climatologyMeteorologyAtmosphere"
+        if "related_dataset" in old_metadata.keys():
+            metadata["related_dataset"] = old_metadata["related_dataset"]
 
-        # END MOVE
+        # This can be changed by the user:
+        id = "id"
+        metadata[id] = check_replace(id, new_metadata, str(uuid.uuid4()))
+        date_created = "date_created"
+        metadata[date_created] = check_replace(
+            date_created, new_metadata,
+            datetime.datetime.utcnow().replace(tzinfo=pytz.timezone("utc")).isoformat())
+        title = "title"
+        metadata[title] = check_replace(
+            title, new_metadata, "Sea surface wind (10 m above sea "
+            "level) estimated from {:s} NRCS, acquired on {:s}".format(
+                platforms[sar_filename[:3]][0], t0.strftime("%Y-%m-%d %H:%M:%S UTC")))
+        title_no = "title_no"
+        metadata[title_no] = check_replace(
+            title_no, new_metadata, "Overflatevind (10 moh) utledet"
+            " fra {:s} NRCS {:s}".format(platforms[sar_filename[:3]][0],
+                                         t0.strftime("%Y-%m-%d %H:%M:%S UTC")))
+        summary = "summary"
+        metadata[summary] = check_replace(
+            summary, new_metadata, "Surface wind speed (10 m above "
+            "sea level) calculated from C-band Synthetic Aperture Radar (SAR) Normalized Radar "
+            "Cross Section (NRCS) and model forecast wind, using CMOD5n. The wind speed is "
+            "calculated for neutrally stable conditions and is equivalent to the wind stress.")
+        summary_no = "summary_no"
+        metadata[summary_no] = check_replace(
+            summary_no, new_metadata, "Overflatevind (10 moh) "
+            "beregnet fra SAR C-bånd tilbakespredning og vindretning fra varslingsmodell, ved "
+            "bruk av CMOD5n. Vindhastigheten er beregnet under antagelse av nøytral "
+            "atmosfærestabilitet, og er representativ for vindstress.")
+        license = "license"
+        metadata[license] = check_replace(license, new_metadata,
+                                          "https://spdx.org/licenses/CC-BY-4.0 (CC-BY-4.0)")
+        kw = "keywords"
+        metadata[kw] = check_replace(
+            kw, new_metadata,
+            "GCMDSK:EARTH SCIENCE > OCEANS > OCEAN WINDS > SURFACE WINDS > WIND SPEED, "
+            "GCMDSK:EARTH SCIENCE > OCEANS > OCEAN WINDS > WIND STRESS, "
+            "GEMET:Atmospheric conditions, "
+            "NORTHEMES:Vær og klima")
+        kw_voc = "keywords_vocabulary"
+        metadata[kw_voc] = check_replace(
+            kw_voc, new_metadata,
+            "GCMDSK:GCMD Science Keywords:https://vocab.met.no/GCMDSK, "
+            "GEMET:INSPIRE Themes:http://inspire.ec.europa.eu/theme, "
+            "NORTHEMES:GeoNorge Themes:https://register.geonorge.no/metadata-kodelister/"
+            "nasjonal-temainndeling")
+        refs = "references"
+        metadata[refs] = check_replace(refs, new_metadata,
+                                       "https://doi.org/10.1029/2006JC003743 (Scientific "
+                                       "publication)")
+        proc_level = "processing_level"
+        metadata[proc_level] = check_replace(proc_level, new_metadata, "Operational")
 
-        # Set metadata from dict
-        nc_ds = netCDF4.Dataset(filename, "a")
-        for att in nc_ds.ncattrs():
-            nc_ds.delncattr(att)
-        nc_ds.setncatts(metadata)
-        # Clean variable metadata
-        md_rm = ["colormap", "minmax", "dataType", "SourceBand", "SourceFilename", "wkv"]
-        for key in nc_ds.variables.keys():
-            for md_key in md_rm:
-                if md_key in nc_ds[key].ncattrs():
-                    nc_ds[key].delncattr(md_key)
-        nc_ds.close()
+        nauth = "naming_authority"
+        metadata[nauth] = check_replace(nauth, new_metadata, "no.met")
+        ptype = "publisher_type"
+        metadata[ptype] = check_replace(ptype, new_metadata, "institution")
+        pmail = "publisher_email"
+        metadata[pmail] = check_replace(pmail, new_metadata, "data-management-group@met.no")
+
+        publ_url = "publisher_url"
+        metadata[publ_url] = check_replace(publ_url, new_metadata, "https://www.met.no/")
+        publ_name = "publisher_name"
+        metadata[publ_name] = check_replace(publ_name, new_metadata,
+                                            "Norwegian Meteorological Institute")
+        insti = "institution"
+        metadata[insti] = check_replace(insti, new_metadata,
+                                        "Norwegian Meteorological Institute (MET Norway)")
+        access_const = "access_constraint"
+        metadata[access_const] = check_replace(access_const, new_metadata, "Open")
+        ds_prod_stat = "dataset_production_status"
+        metadata[ds_prod_stat] = check_replace(ds_prod_stat, new_metadata, "Complete")
+        proj = "project"
+        metadata[proj] = check_replace(proj, new_metadata,
+                                       "Svalbard Integrated Arctic Earth Observing System – "
+                                       "Infrastructure development of the Norwegian node "
+                                       "(SIOS-InfraNor)")
+        qual = "quality_control"
+        metadata[qual] = check_replace(qual, new_metadata, "No quality control")
+
+        # This must be provided as input
+        metadata["creator_type"] = new_metadata.pop("creator_type", "")
+        metadata["creator_name"] = new_metadata.pop("creator_name", "")
+        metadata["creator_email"] = new_metadata.pop("creator_email", "")
+        metadata["creator_institution"] = new_metadata.pop("creator_institution", "")
+        metadata["contributor_name"] = new_metadata.pop("contributor_name", "")
+        metadata["contributor_role"] = new_metadata.pop("contributor_role", "")
+        metadata["contributor_email"] = new_metadata.pop("contributor_email", "")
+        metadata["contributor_institution"] = new_metadata.pop("contributor_institution", "")
+
+        # Remove filename metadata
+        metadata.pop("filename", "")
+
+        return metadata

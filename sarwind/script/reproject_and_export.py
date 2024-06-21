@@ -65,12 +65,13 @@ def create_parser():
     return parser
 
 
-def main(args=None):
+def reproject_swath_dataset_and_export_mmd(sarwind, reprojected_path, parent_mmd, odap_target_url,
+                                           wms_base_url, log_to_file=False, log_file=None):
     """Reproject and export SAR wind to a new dataset.
     """
-    if args.log_to_file:
-        logging.basicConfig(filename=args.log_file, level=logging.INFO)
-    n = Nansat(args.sarwind, mapper="sarwind")
+    if log_to_file:
+        logging.basicConfig(filename=log_file, level=logging.INFO)
+    n = Nansat(sarwind, mapper="sarwind")
     model = Nansat(n.get_metadata("wind_filename"))
     lon, lat = n.get_corners()
     model.crop_lonlat([lon.min(), lon.max()], [lat.min(), lat.max()])
@@ -96,10 +97,10 @@ def main(args=None):
     year = f"{time.year:04d}"
     month = f"{time.month:02d}"
     day = f"{time.day:02d}"
-    pp = Path(os.path.join(args.output_path, year, month, day))
+    pp = Path(os.path.join(reprojected_path, year, month, day))
     pp.mkdir(exist_ok=True, parents=True)
-    filename = "reprojected_" + os.path.basename(args.sarwind)
-    full_path = os.path.join(args.output_path, year, month, day, filename)
+    filename = "reprojected_" + os.path.basename(sarwind)
+    full_path = os.path.join(reprojected_path, year, month, day, filename)
     if os.path.isfile(full_path):
         logging.debug("%s already exists" % full_path)
     else:
@@ -146,18 +147,24 @@ def main(args=None):
     add_wms = False
     wms_layers = None
     wms_url = None
-    if args.wms_base_url is not None:
+    if wms_base_url is not None:
         add_wms = True
         wms_layers = ["windspeed"]
-        wms_url = os.path.join(args.wms_base_url, year, month, day, filename)
+        wms_url = os.path.join(wms_base_url, year, month, day, filename)
 
-    statusm, msgm = export_mmd(full_path, args.odap_target_url,
-                               parent=args.parent_mmd, add_wms_data_access=add_wms,
+    statusm, msgm = export_mmd(full_path, odap_target_url,
+                               parent=parent_mmd, add_wms_data_access=add_wms,
                                wms_link=wms_url, wms_layer_names=wms_layers)
     if statusm:
         logging.info("Created MMD file: {:s}".format(msgm))
     else:
         logging.info("Could not create MMD file. {:s}".format(msgm))
+
+
+def main(args=None):
+    reproject_swath_dataset_and_export_mmd(args.sarwind, args.output_path, args.parent_mmd,
+                                           args.odap_target_url, args.wms_base_url,
+                                           log_to_file=args.log_to_file, log_file=args.log_file)
 
 
 def _main():  # pragma: no cover

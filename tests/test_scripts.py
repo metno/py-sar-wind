@@ -83,10 +83,10 @@ def testProcess_sar_wind_create_parser(monkeypatch):
 
 
 @pytest.mark.without_nansat
-def testProcess_sar_wind_export_mmd(monkeypatch, mock_nansat):
+def testProcess_sar_wind_export_metadata(monkeypatch, mock_nansat):
     """Test function for exporting to MMD.
     """
-    from sarwind.script.process_sar_wind import export_mmd
+    from sarwind.script.process_sar_wind import export_metadata
     nc_file0 = "2024/04/28/fake.nc"
     expected_mmd_fn0 = "./mmd/2024/04/28/fake.xml"
     nc_file1 = "/some/random/folder/2024/04/28/fake.nc"
@@ -96,13 +96,15 @@ def testProcess_sar_wind_export_mmd(monkeypatch, mock_nansat):
         mp.setattr(Nc_to_mmd, "__init__", lambda *a, **k: None)
         mp.setattr(Nc_to_mmd, "to_mmd", lambda *a, **k: (True, expected_mmd_fn0))
         # This requires https://github.com/metno/py-mmd-tools/pull/329
-        # status, msg = export_mmd(nc_file0, os.path.join("/lustre/path/", nc_file0), base_url)
-        status, msg = export_mmd(nc_file0, base_url)
+        # status, msg = export_metadata(nc_file0, os.path.join("/lustre/path/", nc_file0),
+        # base_url)
+        status, msg = export_metadata(nc_file0, base_url)
         assert msg == expected_mmd_fn0
         mp.setattr(Nc_to_mmd, "to_mmd", lambda *a, **k: (True, expected_mmd_fn1))
         # This requires https://github.com/metno/py-mmd-tools/pull/329
-        # status, msg = export_mmd(nc_file1, os.path.join("/lustre/path/", nc_file1), base_url)
-        status, msg = export_mmd(nc_file1, base_url)
+        # status, msg = export_metadata(nc_file1, os.path.join("/lustre/path/", nc_file1),
+        # base_url)
+        status, msg = export_metadata(nc_file1, base_url)
         assert msg == expected_mmd_fn1
 
 
@@ -122,11 +124,12 @@ def testProcess_sar_wind_main(monkeypatch, caplog):
     args = MockArgs()
     args.time = datetime.datetime.now(timezone("utc")).isoformat()
     args.delta = 24
-    args.output_path = "/path/to/out"
+    args.swath_path = "/path/to/out"
     args.export_mmd = True
     args.nc_target_path = "/path/to/target/file.nc"
     args.odap_target_url = "https://thredds.met.no/thredds/dodsC/sarwind"
     args.log_to_file = False
+    args.log_file = None
     args.parent_mmd = None
     with monkeypatch.context() as mp:
         mp.setattr("sarwind.script.process_sar_wind.get_sar",
