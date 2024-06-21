@@ -56,7 +56,7 @@ class SARWind(Nansat, object):
         # If this is a netcdf file with already calculated windspeed
         # do not recalculate wind
         if self.has_band("windspeed"):
-            raise Exception("Wind speed already calculated")
+            raise ValueError("Wind speed already calculated")
 
         # Get HH pol NRCS (since we don't want to use pixel function generated VV pol)
         try:
