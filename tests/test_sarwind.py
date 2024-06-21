@@ -281,27 +281,28 @@ def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
     """ Test the export function
     """
     from sarwind.sarwind import SARWind
-    w = SARWind(sarIW_SAFE, meps)
-    # No args
-    w.export()
     fn = "S1A_IW_GRDH_1SDV_20221026T054447_20221026T054512_045609_05740C_2B2A_wind.nc"
+    w = SARWind(sarIW_SAFE, meps)
+    tit = ("Sea surface wind (10 m above sea level) estimated from Sentinel-1A NRCS, acquired "
+           "on 2022-10-26 05:44:47 UTC")
+    metadata = {"title": tit,}
+    w.export(filename=fn, metadata=metadata)
     assert os.path.isfile(fn)
     ds = netCDF4.Dataset(fn)
-    tit = ("Sea surface wind (10 m above sea level) estimated from Sentinel-1A NRCS, "
-           "acquired on 2022-10-26 05:44:47 UTC")
     assert ds.title == tit
     os.remove(fn)
     # Provide filename and related_dataset
     with tempfile.NamedTemporaryFile(delete=True) as fp:
-        w.set_metadata("related_dataset", "11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
-                                          "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)")
-        w.export(filename=fp.name)
+        metadata = {"related_dataset": "11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
+                                       "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)"}
+        w.export(filename=fp.name, metadata=metadata)
         assert os.path.isfile(fp.name)
     assert not os.path.isfile(fp.name)
     # Provide bands
-    bands = ["x_wind_10m"]
+    bands = ["windspeed"]
+    metadata = {"title": tit,}
     with tempfile.NamedTemporaryFile(delete=True) as fp:
-        w.export(filename=fp.name, bands=bands)
+        w.export(filename=fp.name, bands=bands, metadata=metadata)
         assert os.path.isfile(fp.name)
     assert not os.path.isfile(fp.name)
 

@@ -344,6 +344,7 @@ class SARWind(Nansat, object):
 
         if filename is None:
             filename = self.filename.split("/")[-1].split(".")[0] + "_wind.nc"
+
         if bands is None:
             bands = [
                 self.get_band_number("wind_direction"),
@@ -370,10 +371,10 @@ class SARWind(Nansat, object):
                 mm["dataType"] = 6
                 name = mm.pop("name")
                 bands_dict[name] = mm
-            bands_dict["windspeed"]["colormap"]= "cmocean.cm.speed"
-            bands_dict["model_windspeed"]["colormap"]= "cmocean.cm.speed"
-            bands_dict["wind_direction"]["colormap"]= "cmocean.cm.phase"
-            bands_dict["look_relative_wind_direction"]["colormap"]= "cmocean.cm.phase"
+            bands_dict["windspeed"]["colormap"] = "cmocean.cm.speed"
+            bands_dict["model_windspeed"]["colormap"] = "cmocean.cm.speed"
+            bands_dict["wind_direction"]["colormap"] = "cmocean.cm.phase"
+            bands_dict["look_relative_wind_direction"]["colormap"] = "cmocean.cm.phase"
             super().export2thredds(filename, bands=bands_dict,
                                    time=datetime.datetime.fromisoformat(
                                        metadata["time_coverage_start"]))
@@ -427,8 +428,8 @@ class SARWind(Nansat, object):
         time = datetime.datetime.utcnow().replace(tzinfo=pytz.timezone("utc")).isoformat()
         new_proj = model.get_metadata(band_id=model.get_band_number(
             {"standard_name": "wind_speed"}))["grid_mapping"]
-        metadata["history"] = (metadata["history"] +
-                               "\n{:s}: reproject to {:s} grid mapping".format(time, new_proj))
+        metadata["history"] = metadata["history"] + \
+            "\n{:s}: reproject to {:s} grid mapping".format(time, new_proj)
         self.vrt.dataset.SetMetadata(metadata)
 
     def set_get_standard_metadata(self, new_metadata=None):
@@ -581,7 +582,8 @@ class SARWind(Nansat, object):
         metadata[ds_prod_stat] = check_replace(ds_prod_stat, new_metadata, "Complete")
         proj = "project"
         metadata[proj] = check_replace(proj, new_metadata,
-                                       "SIOS – Infrastructure development of the Norwegian node "
+                                       "Svalbard Integrated Arctic Earth Observing System – "
+                                       "Infrastructure development of the Norwegian node "
                                        "(SIOS-InfraNor)")
         qual = "quality_control"
         metadata[qual] = check_replace(qual, new_metadata, "No quality control")

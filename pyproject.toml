@@ -4,10 +4,9 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sarwind"
+name = "py-sar-wind"
 authors = [
     {name = "Morten W. Hansen", email="mortenwh@met.no"},
-    # Frode..
 ]
 description = "Process wind speed from SAR and weather forecast wind directions"
 readme = "README.md"
@@ -46,7 +45,7 @@ process_sar_wind = "sarwind.script.process_sar_wind:_main"
 reproject_and_export = "sarwind.script.reproject_and_export:_main"
 
 [project.urls]
-source = "https://github.com/metno/met-sar-vind"
+source = "https://github.com/metno/py-sar-wind"
 
 [tool.setuptools]
 include-package-data = true
