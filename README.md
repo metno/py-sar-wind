@@ -1,6 +1,6 @@
-[![flake8](https://github.com/metno/met-sar-vind/actions/workflows/syntax.yml/badge.svg?branch=main)](https://github.com/metno/met-sar-vind/actions/workflows/syntax.yml)
-[![pytest](https://github.com/metno/met-sar-vind/actions/workflows/pytest.yml/badge.svg?branch=main)](https://github.com/metno/met-sar-vind/actions/workflows/pytest.yml)
-[![codecov](https://codecov.io/gh/metno/met-sar-vind/branch/main/graph/badge.svg?token=xSG9Sg0jQ0)](https://codecov.io/gh/metno/met-sar-vind)
+[![flake8](https://github.com/metno/py-sar-wind/actions/workflows/syntax.yml/badge.svg)](https://github.com/metno/py-sar-wind/actions/workflows/syntax.yml)
+[![pytest](https://github.com/metno/py-sar-wind/actions/workflows/pytest.yml/badge.svg)](https://github.com/metno/py-sar-wind/actions/workflows/pytest.yml)
+[![codecov](https://codecov.io/gh/metno/py-sar-wind/graph/badge.svg?token=fuO0XONBOp)](https://codecov.io/gh/metno/py-sar-wind)
 
 # met-sar-vind
 
