@@ -285,7 +285,7 @@ def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
     w = SARWind(sarIW_SAFE, meps)
     tit = ("Sea surface wind (10 m above sea level) estimated from Sentinel-1A NRCS, acquired "
            "on 2022-10-26 05:44:47 UTC")
-    metadata = {"title": tit,}
+    metadata = {"title": tit}
     w.export(filename=fn, metadata=metadata)
     assert os.path.isfile(fn)
     ds = netCDF4.Dataset(fn)
@@ -300,7 +300,7 @@ def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
     assert not os.path.isfile(fp.name)
     # Provide bands
     bands = ["windspeed"]
-    metadata = {"title": tit,}
+    metadata = {"title": tit}
     with tempfile.NamedTemporaryFile(delete=True) as fp:
         w.export(filename=fp.name, bands=bands, metadata=metadata)
         assert os.path.isfile(fp.name)
