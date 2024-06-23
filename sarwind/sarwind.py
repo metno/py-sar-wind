@@ -363,13 +363,15 @@ class SARWind(Nansat, object):
 
         if bands is None:
             bands = [
-                self.get_band_number({"standard_name": "longitude"}),
-                self.get_band_number({"standard_name": "latitude"}),
                 self.get_band_number("wind_direction"),
                 self.get_band_number("look_relative_wind_direction"),
                 self.get_band_number("windspeed"),
                 self.get_band_number("model_windspeed"),
             ]
+            if self.has_band("longitude") is not None:
+                bands.append(self.get_band_number({"standard_name": "longitude"}))
+            if self.has_band("latitude") is not None:
+                bands.append(self.get_band_number({"standard_name": "latitude"}))
 
         swath_mask_band = "swathmask"
         if self.has_band(swath_mask_band):
