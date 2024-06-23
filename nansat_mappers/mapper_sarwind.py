@@ -21,9 +21,9 @@ class Mapper(VRT):
                 raise WrongMapperError
         for var, val in ds.variables.items():
             if "standard_name" in ds[var].ncattrs():
-                if val.standard_name=="longitude":
+                if val.standard_name == "longitude":
                     lon = var
-                if val.standard_name=="latitude":
+                if val.standard_name == "latitude":
                     lat = var
         longitude = ds[lon][:].data
         latitude = ds[lat][:].data
