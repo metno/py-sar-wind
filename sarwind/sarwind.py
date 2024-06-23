@@ -425,7 +425,7 @@ class SARWind(Nansat, object):
 
         # Remove wrong metadata
         sn = "standard_name"
-        if swath_mask_band in nc_ds.ncattrs():
+        if swath_mask_band in nc_ds.variables.keys():
             if sn in nc_ds[swath_mask_band].ncattrs():
                 nc_ds["swathmask"].delncattr(sn)
 
