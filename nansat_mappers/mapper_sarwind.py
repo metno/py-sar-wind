@@ -19,8 +19,14 @@ class Mapper(VRT):
         else:
             if "urface wind" not in ds.title or "NRCS" not in ds.title:
                 raise WrongMapperError
-        longitude = ds['longitude'][:].data
-        latitude = ds['latitude'][:].data
+        for var, val in ds.variables.items():
+            if "standard_name" in ds[var].ncattrs():
+                if val.standard_name=="longitude":
+                    lon = var
+                if val.standard_name=="latitude":
+                    lat = var
+        longitude = ds[lon][:].data
+        latitude = ds[lat][:].data
         for attr in ds.ncattrs():
             content = ds.getncattr(attr)
             metadata[attr] = content
