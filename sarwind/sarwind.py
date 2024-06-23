@@ -113,6 +113,8 @@ class SARWind(Nansat, object):
                          #      - ignore it, since we always operate
                          #        with UTC
                          "time": np.datetime64(self.time_coverage_start)})
+        if not aux.overlaps(self):
+            raise ValueError("The SAR and wind datasets do not overlap.")
         logging.debug("Reproject model wind field to SAR grid")
         aux.reproject(self, resample_alg=resample_alg, tps=True)
 
