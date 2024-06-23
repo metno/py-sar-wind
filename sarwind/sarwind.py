@@ -75,10 +75,12 @@ class SARWind(Nansat, object):
                 "dataType": "6"
             })
 
+        logging.debug("Resize SAR..")
         # Resize to given pixel size (default 500 m)
         self.resize(pixelsize=pixelsize)
 
         # Get topography
+        logging.debug("Get topography..")
         topo = Nansat(os.getenv("GMTED30"))
         topo.reproject(self, resample_alg=resample_alg, tps=True)
         land = topo[1] > 0
@@ -98,6 +100,7 @@ class SARWind(Nansat, object):
         self.set_metadata("sar_filename", sar_image)
 
         # Get VV NRCS
+        logging.debug("Read sigma0..")
         s0vv = self[self.sigma0_bandNo]
         if self.get_metadata(band_id=self.sigma0_bandNo, key="polarization") == "HH":
             inc = self["incidence_angle"]
@@ -107,6 +110,7 @@ class SARWind(Nansat, object):
             s0vv = s0vv*PR
 
         # Read and reproject model wind field
+        logging.debug("Read model wind..")
         aux = Nansat(wind,
                      netcdf_dim={
                          # OBS: timezone info is lost by np.datetime64
