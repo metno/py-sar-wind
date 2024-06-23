@@ -117,6 +117,7 @@ class SARWind(Nansat, object):
                          #      - ignore it, since we always operate
                          #        with UTC
                          "time": np.datetime64(self.time_coverage_start)})
+        logging.debug("Reproject model wind field to SAR grid")
         aux.reproject(self, resample_alg=resample_alg, tps=True)
 
         # Calculate mean time of the SAR NRCS grid
