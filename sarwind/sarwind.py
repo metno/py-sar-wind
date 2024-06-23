@@ -140,32 +140,32 @@ class SARWind(Nansat, object):
         # Get wind speed and direction
         model_wind_speed, wind_from, time = self.get_model_wind_field(aux)
 
-        ## Add longitude and latitude as bands (should not be necessary..)
-        #try:
-        #    lon_band_no = self.get_band_number({"standard_name": "longitude"})
-        #except ValueError:
-        #    lon_band_no = None
-        #try:
-        #    lat_band_no = self.get_band_number({"standard_name": "latitude"})
-        #except ValueError:
-        #    lat_band_no = None
-        #lon, lat = self.get_geolocation_grids()
-        #if lon_band_no is None:
-        #    self.add_band(
-        #        array=lon,
-        #        parameters={
-        #            "wkv": "longitude",
-        #            "name": "longitude",
-        #            "units": "degree_east",
-        #        })
-        #if lat_band_no is None:
-        #    self.add_band(
-        #        array=lat,
-        #        parameters={
-        #            "wkv": "latitude",
-        #            "name": "latitude",
-        #            "units": "degree_north"
-        #        })
+        # # Add longitude and latitude as bands (should not be necessary..)
+        # try:
+        #     lon_band_no = self.get_band_number({"standard_name": "longitude"})
+        # except ValueError:
+        #     lon_band_no = None
+        # try:
+        #     lat_band_no = self.get_band_number({"standard_name": "latitude"})
+        # except ValueError:
+        #     lat_band_no = None
+        # lon, lat = self.get_geolocation_grids()
+        # if lon_band_no is None:
+        #     self.add_band(
+        #         array=lon,
+        #         parameters={
+        #             "wkv": "longitude",
+        #             "name": "longitude",
+        #             "units": "degree_east",
+        #         })
+        # if lat_band_no is None:
+        #     self.add_band(
+        #         array=lat,
+        #         parameters={
+        #             "wkv": "latitude",
+        #             "name": "latitude",
+        #             "units": "degree_north"
+        #         })
 
         # Store model wind direction
         self.add_band(
@@ -365,8 +365,8 @@ class SARWind(Nansat, object):
                     bands.append(self.get_band_number("latitude"))
 
         swath_mask_band = "swathmask"
-        if self.has_band(swathmask_band):
-            bands.append(self.get_band_number(swathmask_band)
+        if self.has_band(swath_mask_band):
+            bands.append(self.get_band_number(swath_mask_band))
 
         metadata = self.set_get_standard_metadata(new_metadata=metadata.copy())
 
