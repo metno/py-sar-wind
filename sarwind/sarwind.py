@@ -103,12 +103,7 @@ class SARWind(Nansat, object):
             # PR from Lin Ren, Jingsong Yang, Alexis Mouche, et al. (2017) [remote sensing]
             PR = np.square(1.+2.*np.square(np.tan(inc*np.pi/180.))) / \
                 np.square(1.+1.3*np.square(np.tan(inc*np.pi/180.)))
-            s0hh_band_no = self.get_band_number({
-                "standard_name": "surface_backwards_scattering_coefficient_of_radar_wave",
-                "polarization": "HH",
-                "dataType": "6"
-            })
-            s0vv = self[s0hh_band_no]*PR
+            s0vv = s0vv*PR
 
         # Read and reproject model wind field
         aux = Nansat(wind,
@@ -145,22 +140,32 @@ class SARWind(Nansat, object):
         # Get wind speed and direction
         model_wind_speed, wind_from, time = self.get_model_wind_field(aux)
 
-        # Add longitude and latitude as bands
-        lon, lat = self.get_geolocation_grids()
-        self.add_band(
-            array=lon,
-            parameters={
-                "wkv": "longitude",
-                "name": "longitude",
-                "units": "degree_east",
-            })
-        self.add_band(
-            array=lat,
-            parameters={
-                "wkv": "latitude",
-                "name": "latitude",
-                "units": "degree_north"
-            })
+        ## Add longitude and latitude as bands (should not be necessary..)
+        #try:
+        #    lon_band_no = self.get_band_number({"standard_name": "longitude"})
+        #except ValueError:
+        #    lon_band_no = None
+        #try:
+        #    lat_band_no = self.get_band_number({"standard_name": "latitude"})
+        #except ValueError:
+        #    lat_band_no = None
+        #lon, lat = self.get_geolocation_grids()
+        #if lon_band_no is None:
+        #    self.add_band(
+        #        array=lon,
+        #        parameters={
+        #            "wkv": "longitude",
+        #            "name": "longitude",
+        #            "units": "degree_east",
+        #        })
+        #if lat_band_no is None:
+        #    self.add_band(
+        #        array=lat,
+        #        parameters={
+        #            "wkv": "latitude",
+        #            "name": "latitude",
+        #            "units": "degree_north"
+        #        })
 
         # Store model wind direction
         self.add_band(
@@ -359,6 +364,10 @@ class SARWind(Nansat, object):
                 if bool(self.has_band("latitude")):
                     bands.append(self.get_band_number("latitude"))
 
+        swath_mask_band = "swathmask"
+        if self.has_band(swathmask_band):
+            bands.append(self.get_band_number(swathmask_band)
+
         metadata = self.set_get_standard_metadata(new_metadata=metadata.copy())
 
         # Export with Nansat
@@ -406,7 +415,6 @@ class SARWind(Nansat, object):
                     nc_ds[key].delncattr(md_key)
 
         # Remove wrong metadata
-        swath_mask_band = "swathmask"
         sn = "standard_name"
         if swath_mask_band in nc_ds.ncattrs():
             if sn in nc_ds[swath_mask_band].ncattrs():
