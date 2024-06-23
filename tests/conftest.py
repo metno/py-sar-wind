@@ -172,6 +172,9 @@ class MockNansat:
     def get_metadata(self, *args, **kwargs):
         return None
 
+    def intersects(self, *args, **kwargs):
+        return None
+
     def __getitem__(self, *args, **kwargs):
         return None
 

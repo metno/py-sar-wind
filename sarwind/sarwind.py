@@ -113,10 +113,6 @@ class SARWind(Nansat, object):
                          #      - ignore it, since we always operate
                          #        with UTC
                          "time": np.datetime64(self.time_coverage_start)})
-        if not aux.overlaps(self):
-            raise ValueError("The SAR and wind datasets do not overlap.")
-        logging.debug("Reproject model wind field to SAR grid")
-        aux.reproject(self, resample_alg=resample_alg, tps=True)
 
         # Calculate mean time of the SAR NRCS grid
         t0 = datetime.datetime.fromisoformat(
@@ -135,9 +131,16 @@ class SARWind(Nansat, object):
                              "than %s minutes - wind speed cannot be reliably estimated."
                              % max_diff_minutes)
 
+        # Check geospatial intersection
+        if not aux.intersects(self):
+            raise ValueError("The SAR and wind datasets do not intersect.")
+
+        logging.debug("Reproject model wind field to SAR grid")
+        aux.reproject(self, resample_alg=resample_alg, tps=True)
+
         if np.isnan(aux[1]).all():
             raise ValueError("Failing reprojection - make sure the "
-                             "datasets overlap in the geospatial "
+                             "datasets intersect in the geospatial "
                              "domain.")
 
         # Get wind speed and direction

@@ -67,9 +67,9 @@ def testSARWind_using_s1EWnc_arome_filenames(mock_nansat, sarEW_NBS, arome, monk
         smock.side_effect = [
             np.array([0, 0]),           # topo[1]
             1,                          # self[self.sigma0_bandNo]
-            np.array([np.nan, np.nan])  # aux[1]
         ]
         mp.setattr("sarwind.sarwind.Nansat.__getitem__", smock)
+        mp.setattr("sarwind.sarwind.Nansat.intersects", lambda *a, **k: False)
         smock2 = SelectMock()
         smock2.side_effect = [
             "VV",
@@ -80,8 +80,7 @@ def testSARWind_using_s1EWnc_arome_filenames(mock_nansat, sarEW_NBS, arome, monk
         mp.setattr("sarwind.sarwind.Nansat.get_metadata", smock2)
         with pytest.raises(ValueError) as ee:
             SARWind(sarEW_NBS, arome)
-        assert str(ee.value) == ("Failing reprojection - make sure the "
-                                 "datasets overlap in the geospatial domain.")
+        assert str(ee.value) == "The SAR and wind datasets do not intersect."
 
 
 @pytest.mark.without_nansat
@@ -207,8 +206,7 @@ def testSARWind_using_s1EWnc_arome_filenames_with_nansat(sarEW_NBS, arome):
     assert "Time difference between model and SAR wind field is greater" in str(ee.value)
     with pytest.raises(ValueError) as ee:
         SARWind(sarEW_NBS, arome, max_diff_minutes=60)
-    assert str(ee.value) == ("Failing reprojection - make sure the "
-                             "datasets overlap in the geospatial domain.")
+    assert str(ee.value) == "The SAR and wind datasets do not intersect."
 
 
 @pytest.mark.skipif(not nansat_installed, reason="Only works when nansat is installed")
