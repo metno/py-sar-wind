@@ -51,6 +51,7 @@ class SARWind(Nansat, object):
         if not isinstance(sar_image, str) or not isinstance(wind, str):
             raise ValueError("Input parameter for SAR and wind direction must be of type string")
 
+        logging.debug("Read SAR..")
         super().__init__(sar_image, *args, **kwargs)
 
         # If this is a netcdf file with already calculated windspeed
@@ -360,9 +361,9 @@ class SARWind(Nansat, object):
             ]
             if not to_thredds:
                 if bool(self.has_band("longitude")):
-                    bands.append(self.get_band_number("longitude"))
+                    bands.append(self.get_band_number({"standard_name": "longitude"}))
                 if bool(self.has_band("latitude")):
-                    bands.append(self.get_band_number("latitude"))
+                    bands.append(self.get_band_number({"standard_name": "latitude"}))
 
         swath_mask_band = "swathmask"
         if self.has_band(swath_mask_band):
