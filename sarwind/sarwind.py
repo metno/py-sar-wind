@@ -42,7 +42,7 @@ class SARWind(Nansat, object):
         product.
         """
         self = cls.__new__(cls)
-        super(SARWind, self).__init__(filename=filename)
+        super(SARWind, self).__init__(filename=filename, mapper="sarwind")
         return self
 
     def __init__(self, sar_image, wind, pixelsize=500, resample_alg=1, max_diff_minutes=30,
@@ -266,8 +266,8 @@ class SARWind(Nansat, object):
         self.set_metadata("swhistory", history + "\n%s: %s(%s, %s)" % (
             datetime.datetime.utcnow().replace(tzinfo=pytz.timezone("utc")).isoformat(),
             "SARWind",
-            self.get_metadata("wind_filename"),
-            self.get_metadata("sar_filename"))
+            self.get_metadata("sar_filename"),
+            self.get_metadata("wind_filename"))
         )
 
     def set_related_dataset(self, metadata, auxm):

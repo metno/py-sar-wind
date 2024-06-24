@@ -294,6 +294,8 @@ def testSARWind_export(monkeypatch, sarIW_SAFE, meps):
         metadata = {"related_dataset": "11d33864-75ea-4a36-9a4e-68c5b3e97853 (auxiliary), "
                                        "d1863d82-47b3-4048-9dcd-b4dafc45eb7c (auxiliary)"}
         w.export(filename=fp.name, metadata=metadata)
+        ds = netCDF4.Dataset(fp.name)
+        assert ds.title == tit
         assert os.path.isfile(fp.name)
     assert not os.path.isfile(fp.name)
     # Provide bands
