@@ -202,7 +202,6 @@ class SARWind(Nansat, object):
             }
         )
 
-        logging.info("Calculating SAR wind with CMOD...")
 
         startTime = datetime.datetime.now()
 
@@ -220,10 +219,11 @@ class SARWind(Nansat, object):
             })
 
         # Calculate wind speed
+        logging.debug("Calculate SAR wind with CMOD...")
         windspeed = cmod5n_inverse(s0vv, look_relative_wind_direction,
                                    self["incidence_angle"])
 
-        logging.info("Calculation time: " + str(datetime.datetime.now() - startTime))
+        logging.debug("Calculation time: " + str(datetime.datetime.now() - startTime))
 
         windspeed[np.where(np.isinf(windspeed))] = np.nan
 
@@ -269,6 +269,7 @@ class SARWind(Nansat, object):
             self.get_metadata("sar_filename"),
             self.get_metadata("wind_filename"))
         )
+        logging.debug("SAR wind field is ready.")
 
     def set_related_dataset(self, metadata, auxm):
         """Set MMD metadata extension to ACDD. The use of this is
