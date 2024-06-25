@@ -202,7 +202,6 @@ class SARWind(Nansat, object):
             }
         )
 
-
         startTime = datetime.datetime.now()
 
         look_dir = self[self.get_band_number({"standard_name": "sensor_azimuth_angle"})]
