@@ -65,6 +65,7 @@ def testSARWind_using_s1EWnc_arome_filenames(mock_nansat, sarEW_NBS, arome, monk
     with monkeypatch.context() as mp:
         smock = SelectMock()
         smock.side_effect = [
+            np.array([1, 1]),           # self[self.sigma0_bandNo]
             np.array([0, 0]),           # topo[1]
             1,                          # self[self.sigma0_bandNo]
         ]
@@ -81,6 +82,25 @@ def testSARWind_using_s1EWnc_arome_filenames(mock_nansat, sarEW_NBS, arome, monk
         with pytest.raises(ValueError) as ee:
             SARWind(sarEW_NBS, arome)
         assert str(ee.value) == "The SAR and wind datasets do not intersect."
+
+    # Test that sarwind raises exception if the NRCS is NaN
+    with monkeypatch.context() as mp:
+        smock = SelectMock()
+        smock.side_effect = [
+            np.array([np.nan, np.nan])  # self[self.sigma0_bandNo]
+        ]
+        mp.setattr("sarwind.sarwind.Nansat.__getitem__", smock)
+        smock2 = SelectMock()
+        smock2.side_effect = [
+            "VV",
+            "2024-04-04T23:28:31+00:00",
+            "2024-04-04T23:28:51+00:00",
+            "2024-04-04T23:28:31+00:00",
+        ]
+        mp.setattr("sarwind.sarwind.Nansat.get_metadata", smock2)
+        with pytest.raises(ValueError) as ee:
+            SARWind(sarEW_NBS, arome)
+        assert str(ee.value) == "Erroneous SAR product - all NRCS values are NaN."
 
 
 @pytest.mark.without_nansat
