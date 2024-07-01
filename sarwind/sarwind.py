@@ -42,7 +42,7 @@ class SARWind(Nansat, object):
         product.
         """
         self = cls.__new__(cls)
-        super(SARWind, self).__init__(filename=filename)
+        super(SARWind, self).__init__(filename=filename, mapper="sarwind")
         return self
 
     def __init__(self, sar_image, wind, pixelsize=500, resample_alg=1, max_diff_minutes=30,
@@ -74,6 +74,10 @@ class SARWind(Nansat, object):
                 "polarization": "VV",
                 "dataType": "6"
             })
+        # Check that there is data
+        s0vv = self[self.sigma0_bandNo]
+        if s0vv[~np.isnan(s0vv)].shape[0] == 0:
+            raise ValueError("Erroneous SAR product - all NRCS values are NaN.")
 
         logging.debug("Resize SAR..")
         # Resize to given pixel size (default 500 m)
@@ -202,8 +206,6 @@ class SARWind(Nansat, object):
             }
         )
 
-        logging.info("Calculating SAR wind with CMOD...")
-
         startTime = datetime.datetime.now()
 
         look_dir = self[self.get_band_number({"standard_name": "sensor_azimuth_angle"})]
@@ -220,10 +222,11 @@ class SARWind(Nansat, object):
             })
 
         # Calculate wind speed
+        logging.debug("Calculate SAR wind with CMOD...")
         windspeed = cmod5n_inverse(s0vv, look_relative_wind_direction,
                                    self["incidence_angle"])
 
-        logging.info("Calculation time: " + str(datetime.datetime.now() - startTime))
+        logging.debug("Calculation time: " + str(datetime.datetime.now() - startTime))
 
         windspeed[np.where(np.isinf(windspeed))] = np.nan
 
@@ -266,9 +269,10 @@ class SARWind(Nansat, object):
         self.set_metadata("swhistory", history + "\n%s: %s(%s, %s)" % (
             datetime.datetime.utcnow().replace(tzinfo=pytz.timezone("utc")).isoformat(),
             "SARWind",
-            self.get_metadata("wind_filename"),
-            self.get_metadata("sar_filename"))
+            self.get_metadata("sar_filename"),
+            self.get_metadata("wind_filename"))
         )
+        logging.debug("SAR wind field is ready.")
 
     def set_related_dataset(self, metadata, auxm):
         """Set MMD metadata extension to ACDD. The use of this is
