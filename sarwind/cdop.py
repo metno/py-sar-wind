@@ -2,7 +2,7 @@
 # coding=utf-8
 # -------------------------------------------------------------------------------
 # Name:		cdop.py
-# Purpose:      CDOP gmf to estimate the Doppler shift at C-band 
+# Purpose:      CDOP gmf to estimate the Doppler shift at C-band
 #
 # Author:       Alexis Mouche
 # Modified:	Morten Wergeland Hansen
