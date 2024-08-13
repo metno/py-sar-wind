@@ -74,10 +74,16 @@ class SARWind(Nansat, object):
                 "polarization": "VV",
                 "dataType": "6"
             })
+
         # Check that there is data
         s0vv = self[self.sigma0_bandNo]
         if s0vv[~np.isnan(s0vv)].shape[0] == 0:
             raise ValueError("Erroneous SAR product - all NRCS values are NaN.")
+        s0copy = s0vv.copy()
+        s0copy[np.isnan(s0copy)] = 0
+        if not s0copy.any():
+            raise ValueError("Erroneous SAR product - NRCS values are NaN and 0 only.")
+        s0copy = None
 
         logging.debug("Resize SAR..")
         # Resize to given pixel size (default 500 m)

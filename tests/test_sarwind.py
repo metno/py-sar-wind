@@ -102,6 +102,25 @@ def testSARWind_using_s1EWnc_arome_filenames(mock_nansat, sarEW_NBS, arome, monk
             SARWind(sarEW_NBS, arome)
         assert str(ee.value) == "Erroneous SAR product - all NRCS values are NaN."
 
+    # Test that sarwind raises exception if the NRCS is only NaN's and zero's
+    with monkeypatch.context() as mp:
+        smock = SelectMock()
+        smock.side_effect = [
+            np.array([np.nan, np.nan, 0, 0])  # self[self.sigma0_bandNo]
+        ]
+        mp.setattr("sarwind.sarwind.Nansat.__getitem__", smock)
+        smock2 = SelectMock()
+        smock2.side_effect = [
+            "VV",
+            "2024-04-04T23:28:31+00:00",
+            "2024-04-04T23:28:51+00:00",
+            "2024-04-04T23:28:31+00:00",
+        ]
+        mp.setattr("sarwind.sarwind.Nansat.get_metadata", smock2)
+        with pytest.raises(ValueError) as ee:
+            SARWind(sarEW_NBS, arome)
+        assert str(ee.value) == "Erroneous SAR product - NRCS values are NaN and 0 only."
+
 
 @pytest.mark.without_nansat
 def testSARWind_get_model_wind_field(mock_nansat, arome, monkeypatch):
