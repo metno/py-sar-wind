@@ -87,7 +87,7 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
 
     # FIG 2
     ax2 = plt.subplot(1, 3, 2, projection=ccrs.PlateCarree())
-    mda.plot.pcolormesh("lon", "lat", ax=ax2, vmin=vmin, vmax=vmax, cmap=cmocean.cm.haline,
+    mda.plot.pcolormesh("lon", "lat", ax=ax2, vmin=vmin, vmax=vmax, cmap=cmocean.cm.speed,
                         add_colorbar=cb)
     mdu = xr.DataArray(muu[::dp, ::dp], dims=["y", "x"],
                        coords={"lat": (("y", "x"), mlat[::dp, ::dp]),
@@ -114,7 +114,7 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
 
     # FIG 3
     ax3 = plt.subplot(1, 3, 3, projection=ccrs.PlateCarree())
-    sda.plot.pcolormesh("lon", "lat", ax=ax3, vmin=vmin, vmax=vmax, cmap=cmocean.cm.haline,
+    sda.plot.pcolormesh("lon", "lat", ax=ax3, vmin=vmin, vmax=vmax, cmap=cmocean.cm.speed,
                         add_colorbar=cb)
 
     du = xr.DataArray(uu[::dp, ::dp], dims=["y", "x"],
