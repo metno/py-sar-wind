@@ -179,10 +179,20 @@ class MockNansat:
         return None
 
 
+class MockNSR:
+    pass
+
+
+class MockDomain:
+    pass
+
+
 class mocked_nansat:
     """Mock of nansat module
     """
     Nansat = MockNansat
+    NSR = MockNSR
+    Domain = MockDomain
 
 
 @pytest.fixture(scope="function")
@@ -199,5 +209,21 @@ def mock_nansat(monkeypatch):
     # monkeypatch.setattr("nansat.Nansat.resize", lambda *a, **k: None)
     # monkeypatch.setattr("nansat.Nansat.__get_item__", lambda *a, **k: None)
     monkeypatch.setitem(sys.modules, "nansat", mocked_nansat())
+    monkeypatch.setitem(sys.modules, "nansat.nsr", mocked_nansat())
+    monkeypatch.setitem(sys.modules, "nansat.domain", mocked_nansat())
     monkeypatch.setitem(sys.modules, "nansat.nansat", mocked_nansat())
     monkeypatch.setattr("sarwind.sarwind.Nansat", MockNansat)
+
+
+@pytest.fixture(scope="function")
+def mock_nsr(monkeypatch):
+    """Mocks Domain class
+    """
+    monkeypatch.setattr("sarwind.sarwind.NSR", MockNSR)
+
+
+@pytest.fixture(scope="function")
+def mock_domain(monkeypatch):
+    """Mocks Domain class
+    """
+    monkeypatch.setattr("sarwind.sarwind.Domain", MockDomain)

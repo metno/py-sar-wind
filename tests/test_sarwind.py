@@ -73,6 +73,8 @@ def testSARWind_using_s1EWnc_arome_filenames(mock_nansat, sarEW_NBS, arome, monk
         mp.setattr("sarwind.sarwind.Nansat.intersects", lambda *a, **k: False)
         smock2 = SelectMock()
         smock2.side_effect = [
+            "2024-04-04T23:28:31+00:00",
+            "2024-04-04T23:28:51+00:00",
             "VV",
             "2024-04-04T23:28:31+00:00",
             "2024-04-04T23:28:51+00:00",
@@ -92,6 +94,8 @@ def testSARWind_using_s1EWnc_arome_filenames(mock_nansat, sarEW_NBS, arome, monk
         mp.setattr("sarwind.sarwind.Nansat.__getitem__", smock)
         smock2 = SelectMock()
         smock2.side_effect = [
+            "2024-04-04T23:28:31+00:00",
+            "2024-04-04T23:28:51+00:00",
             "VV",
             "2024-04-04T23:28:31+00:00",
             "2024-04-04T23:28:51+00:00",
@@ -111,6 +115,8 @@ def testSARWind_using_s1EWnc_arome_filenames(mock_nansat, sarEW_NBS, arome, monk
         mp.setattr("sarwind.sarwind.Nansat.__getitem__", smock)
         smock2 = SelectMock()
         smock2.side_effect = [
+            "2024-04-04T23:28:31+00:00",
+            "2024-04-04T23:28:51+00:00",
             "VV",
             "2024-04-04T23:28:31+00:00",
             "2024-04-04T23:28:51+00:00",
@@ -241,7 +247,7 @@ def testSARWind_using_s1EWnc_arome_filenames_with_nansat(sarEW_NBS, arome):
     """
     from sarwind.sarwind import SARWind
     with pytest.raises(ValueError) as ee:
-        SARWind(sarEW_NBS, arome)
+        SARWind(sarEW_NBS, arome, max_diff_minutes=30)
     assert "Time difference between model and SAR wind field is greater" in str(ee.value)
     with pytest.raises(ValueError) as ee:
         SARWind(sarEW_NBS, arome, max_diff_minutes=60)
@@ -360,7 +366,7 @@ def testSARWind_using_s1IWDV_meps_filenames(sarIW_SAFE, meps):
 
 
 @pytest.mark.without_nansat
-def testSARWind_calculate_wind_from_direction():
+def testSARWind_calculate_wind_from_direction(mock_nansat, mock_nsr, mock_domain):
     """ Test that the wind direction becomes correct.
     """
     from sarwind.sarwind import SARWind

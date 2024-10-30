@@ -11,7 +11,11 @@ import datetime
 
 import numpy as np
 
+from dateutil.parser import parse
+
+from nansat.nsr import NSR
 from nansat.nansat import Nansat
+from nansat.domain import Domain
 
 from sarwind.cmod5n import cmod5n_inverse
 
@@ -45,7 +49,7 @@ class SARWind(Nansat, object):
         super(SARWind, self).__init__(filename=filename, mapper="sarwind")
         return self
 
-    def __init__(self, sar_image, wind, pixelsize=500, resample_alg=1, max_diff_minutes=30,
+    def __init__(self, sar_image, wind, pixelsize=500, resample_alg=0, max_diff_minutes=90,
                  *args, **kwargs):
 
         if not isinstance(sar_image, str) or not isinstance(wind, str):
@@ -98,12 +102,14 @@ class SARWind(Nansat, object):
             raise ValueError("No SAR NRCS ocean coverage.")
 
         # Set correct time_coverage (opendap mapper sets end=start)
-        try:
-            ds = netCDF4.Dataset(sar_image)
-        except OSError:
-            ds = netCDF4.Dataset(sar_image + "#fillmismatch")
-        self.set_metadata("time_coverage_start", ds.time_coverage_start)
-        self.set_metadata("time_coverage_end", ds.time_coverage_end)
+        if parse(self.get_metadata("time_coverage_end")) == \
+                parse(self.get_metadata("time_coverage_start")):
+            try:
+                ds = netCDF4.Dataset(sar_image)
+            except OSError:
+                ds = netCDF4.Dataset(sar_image + "#fillmismatch")
+            self.set_metadata("time_coverage_start", ds.time_coverage_start)
+            self.set_metadata("time_coverage_end", ds.time_coverage_end)
 
         # Store wind and SAR filenames/urls
         self.set_metadata("wind_filename", wind)
@@ -148,6 +154,17 @@ class SARWind(Nansat, object):
         # Check geospatial intersection
         if not aux.intersects(self):
             raise ValueError("The SAR and wind datasets do not intersect.")
+
+        logging.debug("Reproject model wind field to extended SAR grid at 1000 m pixels")
+        lon, lat = self.get_geolocation_grids()
+
+        lonmin = np.max([-180, np.floor(lon.min()-10)])
+        latmin = np.max([-90, np.floor(lat.min()-10)])
+        lonmax = np.min([180, np.ceil(lon.max()+10)])
+        latmax = np.min([90, np.ceil(lat.max()+10)])
+        dom0 = Domain(NSR().wkt, "-lle %d %d %d %d -tr 0.1 0.1" % (lonmin, latmin,
+                                                                   lonmax, latmax))
+        aux.reproject(dom0, resample_alg=resample_alg, tps=True)
 
         logging.debug("Reproject model wind field to SAR grid")
         aux.reproject(self, resample_alg=resample_alg, tps=True)
@@ -335,12 +352,28 @@ class SARWind(Nansat, object):
             # Custom functions are needed here..
             if "arome" in title.lower():
                 model_wind_speed, wind_from, time = SARWind.get_arome_arctic_wind(aux)
+            else:
+                model_wind_speed, wind_from, time = SARWind.get_wind(aux)
 
         return model_wind_speed, wind_from, time
 
     @staticmethod
+    def get_wind(aux):
+        """Calculate wind-from direction and wind speed from a
+        dataset with standard u and v components.
+        """
+        u_band_no = aux.get_band_number({"standard_name": "eastward_wind"})
+        v_band_no = aux.get_band_number({"standard_name": "northward_wind"})
+        u = aux[u_band_no]
+        v = aux[v_band_no]
+        time = aux.get_metadata(band_id=u_band_no, key="time")
+        speed = np.sqrt(np.square(u) + np.square(v))
+        dir = SARWind.calculate_wind_from_direction(u, v)
+        return speed, dir, time
+
+    @staticmethod
     def get_arome_arctic_wind(aux):
-        """ Calculate wind_from direction and wind speed from
+        """ Calculate wind-from direction and wind speed from
         Arome-Arctic datasets with erroneous standard names.
         """
         # Make sure that we're dealing with the correct exception
