@@ -241,7 +241,7 @@ def testSARWind_using_s1EWnc_arome_filenames_with_nansat(sarEW_NBS, arome):
     """
     from sarwind.sarwind import SARWind
     with pytest.raises(ValueError) as ee:
-        SARWind(sarEW_NBS, arome)
+        SARWind(sarEW_NBS, arome, max_diff_minutes=30)
     assert "Time difference between model and SAR wind field is greater" in str(ee.value)
     with pytest.raises(ValueError) as ee:
         SARWind(sarEW_NBS, arome, max_diff_minutes=60)
