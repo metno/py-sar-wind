@@ -51,3 +51,5 @@ Quick look at the data:
 from swutils.utils import plot_wind_map
 plot_wind_map(w)
 ```
+
+![Example wind field](https://github.com/metno/py-sar-wind/blob/main/example.png)
