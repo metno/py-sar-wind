@@ -71,6 +71,7 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
                         add_colorbar=cb)
     ax1.add_feature(cfeature.LAND, zorder=100, edgecolor='k')
     ax1.gridlines(draw_labels=True)
+    ax1.title.set_text("NRCS")
 
     # Wind direction
     dir_from_band_no = w.get_band_number({"standard_name": "wind_from_direction"})
@@ -100,6 +101,7 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
                     width=0.001)
     ax2.add_feature(cfeature.LAND, zorder=100, edgecolor='k')
     ax2.gridlines(draw_labels=True)
+    ax2.title.set_text("Model wind field")
 
     # SAR wind
     speed_band_no = w.get_band_number({"standard_name": "wind_speed",
@@ -128,6 +130,7 @@ def plot_wind_map(w, vmin=0, vmax=20, title=None):
 
     ax3.add_feature(cfeature.LAND, zorder=100, edgecolor='k')
     ax3.gridlines(draw_labels=True)
+    ax3.title.set_text("SAR wind speed")
     # if title is None:
     #     plt.title('Wind on %s' % w.time_coverage_start.strftime('%Y-%m-%d'))
 
