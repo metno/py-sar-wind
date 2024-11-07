@@ -8,6 +8,13 @@ Tools for SAR wind processing.
 
 # Installation
 
+GTOPO30 is needed
+
+Add the location of the source files and the VRT file to your .bashrc-file:
+```
+export GMTED30=$HOME/GMTED/gmted2010_30.vrt
+```
+
 Create conda environment:
 
 ```
