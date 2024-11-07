@@ -52,4 +52,9 @@ from swutils.utils import plot_wind_map
 plot_wind_map(w)
 ```
 
+Export to netCDF:
+```
+w.export("S1A_EW_GRDM_1SDV_20241103T024443_20241103T024549_056384_06E87A_B5A4.nc")
+```
+
 ![Example wind field](https://github.com/metno/py-sar-wind/blob/main/example.png)
