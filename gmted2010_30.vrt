@@ -1,0 +1,872 @@
+<VRTDataset rasterXSize="43200" rasterYSize="21600">
+  <SRS>GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433],AUTHORITY["EPSG","4326"]]</SRS>
+  <GeoTransform> -1.8000013888888890e+02,  8.3333333333333263e-03,  0.0000000000000000e+00,  8.9999861111111116e+01,  0.0000000000000000e+00, -8.3333333333333263e-03</GeoTransform>
+  <VRTRasterBand dataType="Int16" band="1">
+    <NoDataValue>-32768</NoDataValue>
+    <ColorInterp>Gray</ColorInterp>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N000E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="21600" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N030E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="25200" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N030W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="18000" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N060E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="28800" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N060W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="14400" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N090E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="32400" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N090W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="10800" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N120E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="36000" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N120W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="7200" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N150E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="39600" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N150W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="3600" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10N180W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="0" yOff="7200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S000E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="21600" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S030E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="25200" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S030W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="18000" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S060E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="28800" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S060W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="14400" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S090E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="32400" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S090W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="10800" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S120E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="36000" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S120W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="7200" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S150E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="39600" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S150W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="3600" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">10S180W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="0" yOff="9600" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N000E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="21600" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N030E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="25200" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N030W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="18000" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N060E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="28800" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N060W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="14400" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N090E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="32400" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N090W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="10800" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N120E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="36000" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N120W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="7200" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N150E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="39600" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N150W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="3600" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30N180W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="0" yOff="4800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S000E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="21600" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S030E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="25200" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S030W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="18000" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S060E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="28800" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S060W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="14400" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S090E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="32400" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S090W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="10800" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S120E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="36000" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S120W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="7200" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S150E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="39600" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S150W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="3600" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">30S180W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="0" yOff="12000" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N000E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="21600" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N030E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="25200" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N030W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="18000" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N060E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="28800" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N060W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="14400" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N090E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="32400" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N090W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="10800" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N120E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="36000" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N120W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="7200" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N150E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="39600" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N150W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="3600" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50N180W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="0" yOff="2400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S000E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="21600" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S030E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="25200" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S030W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="18000" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S060E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="28800" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S060W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="14400" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S090E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="32400" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S090W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="10800" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S120E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="36000" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S120W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="7200" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S150E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="39600" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S150W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="3600" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">50S180W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="0" yOff="14400" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N000E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="21600" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N030E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="25200" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N030W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="18000" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N060E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="28800" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N060W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="14400" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N090E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="32400" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N090W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="10800" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N120E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="36000" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N120W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="7200" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N150E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="39600" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N150W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="3600" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70N180W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S000E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="21600" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S030E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="25200" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S030W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="18000" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S060E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="28800" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S060W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="14400" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S090E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="32400" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S090W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="10800" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S120E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="36000" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S120W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="7200" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S150E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="39600" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S150W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="3600" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">70S180W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="0" yOff="16800" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S000E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="21600" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S030E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="25200" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S030W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="18000" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S060E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="28800" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S060W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="14400" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S090E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="32400" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S090W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="10800" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S120E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="36000" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S120W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="7200" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S150E_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="39600" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S150W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="3600" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+    <ComplexSource>
+      <SourceFilename relativeToVRT="1">90S180W_20101117_gmted_mea300.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="3600" RasterYSize="2400" DataType="Int16" BlockXSize="3600" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="0" xSize="3600" ySize="2400" />
+      <DstRect xOff="0" yOff="19200" xSize="3600" ySize="2400" />
+      <NODATA>-32768</NODATA>
+    </ComplexSource>
+  </VRTRasterBand>
+</VRTDataset>

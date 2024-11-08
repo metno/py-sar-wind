@@ -6,17 +6,30 @@
 
 Tools for SAR wind processing.
 
-# Installation
+# Pre-installation requirements
 
-GTOPO30 is needed
+In order to use py-sar-wind, Earth topography data is required to separate
+between land and ocean coverage in the SAR data. We use the Mean Statistic, 30
+arc-seconds global raster data grids provided by the U.S. Geological Survey
+(USGS; https://www.usgs.gov/coastal-changes-and-impacts/gmted2010).
 
-Add the location of the source files and the VRT file to your .bashrc-file:
+In order to use the topography dataset, launch the GMTED2010 Viewer available
+via https://www.usgs.gov/coastal-changes-and-impacts/gmted2010, select all the
+regions, and download the "Mean - 30 arc-sec" tif-files. Add the files to a
+local folder, and copy the file `gmted2010_30.vrt` in py-sar-wind to the same
+folder as the source files (xml and tif).
+
+Finally, add the location of the source files and the VRT file to your
+.bashrc-file:
 ```
 export GMTED30=$HOME/GMTED/gmted2010_30.vrt
 ```
 
-Create conda environment:
+You should now be ready to install py-sar-wind.
 
+# Installation
+
+Create conda environment:
 ```
 conda env create -f sar-wind.yml
 ```
