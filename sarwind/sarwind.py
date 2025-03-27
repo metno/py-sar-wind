@@ -144,8 +144,13 @@ class SARWind(Nansat, object):
             sar_mean_time = pytz.utc.localize(sar_mean_time)
 
         # Check time difference between SAR and model
-        tdiff = np.abs(sar_mean_time - datetime.datetime.fromisoformat(
-            aux.get_metadata(band_id=1, key="time")).replace(tzinfo=pytz.timezone("utc")))
+        try:
+            wtime_iso = aux.get_metadata(band_id=1, key="time")
+        except ValueError:
+            # ERA5 data use "time_iso_8601"
+            wtime_iso = aux.get_metadata(band_id=1, key="time_iso_8601")
+        wtime = datetime.datetime.fromisoformat(wtime_iso).replace(tzinfo=pytz.timezone("utc"))
+        tdiff = np.abs(sar_mean_time - wtime)
         if tdiff.seconds/60 > max_diff_minutes:
             raise ValueError("Time difference between model and SAR wind field is greater "
                              "than %s minutes - wind speed cannot be reliably estimated."
@@ -348,7 +353,8 @@ class SARWind(Nansat, object):
             model_wind_speed = aux[speed_band_no]
 
         if calc_wind_from:
-            title = aux.get_metadata("title")
+            md = aux.get_metadata()
+            title = md.pop("title", "")
             # Custom functions are needed here..
             if "arome" in title.lower():
                 model_wind_speed, wind_from, time = SARWind.get_arome_arctic_wind(aux)
@@ -362,6 +368,8 @@ class SARWind(Nansat, object):
         """Calculate wind-from direction and wind speed from a
         dataset with standard u and v components.
         """
+        import ipdb
+        ipdb.set_trace()
         u_band_no = aux.get_band_number({"standard_name": "eastward_wind"})
         v_band_no = aux.get_band_number({"standard_name": "northward_wind"})
         u = aux[u_band_no]
