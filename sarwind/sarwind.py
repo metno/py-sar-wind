@@ -144,8 +144,13 @@ class SARWind(Nansat, object):
             sar_mean_time = pytz.utc.localize(sar_mean_time)
 
         # Check time difference between SAR and model
-        tdiff = np.abs(sar_mean_time - datetime.datetime.fromisoformat(
-            aux.get_metadata(band_id=1, key="time")).replace(tzinfo=pytz.timezone("utc")))
+        try:
+            wtime_iso = aux.get_metadata(band_id=1, key="time")
+        except ValueError:
+            # ERA5 data use "time_iso_8601"
+            wtime_iso = aux.get_metadata(band_id=1, key="time_iso_8601")
+        wtime = datetime.datetime.fromisoformat(wtime_iso).replace(tzinfo=pytz.timezone("utc"))
+        tdiff = np.abs(sar_mean_time - wtime)
         if tdiff.seconds/60 > max_diff_minutes:
             raise ValueError("Time difference between model and SAR wind field is greater "
                              "than %s minutes - wind speed cannot be reliably estimated."
@@ -348,14 +353,27 @@ class SARWind(Nansat, object):
             model_wind_speed = aux[speed_band_no]
 
         if calc_wind_from:
-            title = aux.get_metadata("title")
+            md = aux.get_metadata()
+            title = md.pop("title", "")
             # Custom functions are needed here..
             if "arome" in title.lower():
                 model_wind_speed, wind_from, time = SARWind.get_arome_arctic_wind(aux)
             else:
-                model_wind_speed, wind_from, time = SARWind.get_wind(aux)
+                if title == "" and "mars" in md["history"]:
+                    # This is ERA5 dat from ecmwf, not following conventions
+                    model_wind_speed, wind_from, time = SARWind.get_era5_wind(aux)
+                else:
+                    model_wind_speed, wind_from, time = SARWind.get_wind(aux)
 
         return model_wind_speed, wind_from, time
+
+    @staticmethod
+    def velocity(u, v):
+        """Return speed and direction.
+        """
+        speed = np.sqrt(np.square(u) + np.square(v))
+        dir = SARWind.calculate_wind_from_direction(u, v)
+        return speed, dir
 
     @staticmethod
     def get_wind(aux):
@@ -367,13 +385,12 @@ class SARWind(Nansat, object):
         u = aux[u_band_no]
         v = aux[v_band_no]
         time = aux.get_metadata(band_id=u_band_no, key="time")
-        speed = np.sqrt(np.square(u) + np.square(v))
-        dir = SARWind.calculate_wind_from_direction(u, v)
+        speed, dir = SARWind.velocity(u, v)
         return speed, dir, time
 
     @staticmethod
     def get_arome_arctic_wind(aux):
-        """ Calculate wind-from direction and wind speed from
+        """Calculate wind-from direction and wind speed from
         Arome-Arctic datasets with erroneous standard names.
         """
         # Make sure that we're dealing with the correct exception
@@ -381,8 +398,18 @@ class SARWind(Nansat, object):
         u = aux["x_wind_10m"]
         v = aux["y_wind_10m"]
         time = aux.get_metadata(band_id="x_wind_10m", key="time")
-        speed = np.sqrt(np.square(u) + np.square(v))
-        dir = SARWind.calculate_wind_from_direction(u, v)
+        speed, dir = SARWind.velocity(u, v)
+        return speed, dir, time
+
+    @staticmethod
+    def get_era5_wind(aux):
+        """Calculate wind-from direction and wind speed from
+        ECMWF ERA5 netcdf datasets with erroneous standard names.
+        """
+        u = aux["u10"]
+        v = aux["v10"]
+        time = aux.get_metadata(band_id=1, key="time_iso_8601")
+        speed, dir = SARWind.velocity(u, v)
         return speed, dir, time
 
     @staticmethod
